@@ -42,10 +42,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.sorms_app.data.model.RoomData
+import com.example.sorms_app.viewmodel.RoomViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,7 +78,7 @@ class HomeActivity : ComponentActivity() {
             SORMS_appTheme {
                 val context = LocalContext.current
                 var selectedTab by remember { mutableStateOf(HomeTab.HOME) }
-                val userName = intent.getStringExtra("userName") ?: "Cô Minh Hương"
+                val userName = intent.getStringExtra("userName") ?: "Người dùng"
                 val userEmail = intent.getStringExtra("userEmail") ?: ""
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -1266,29 +1270,17 @@ fun NotificationItem(notification: Notification) {
 fun RoomListScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
-    onBookRoom: () -> Unit = {}
+    onBookRoom: () -> Unit = {},
+    viewModel: RoomViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
     
-    // Danh sách phòng
-    val rooms = remember {
-        listOf(
-            Room("C2-301", "Phòng đơn", true, "Tầng 3", "1 người"),
-            Room("C2-302", "Phòng đơn", true, "Tầng 3", "1 người"),
-            Room("C2-303", "Phòng đôi", false, "Tầng 3", "2 người"),
-            Room("C2-304", "Phòng đôi", true, "Tầng 3", "2 người"),
-            Room("C2-305", "Phòng gia đình", false, "Tầng 3", "4 người"),
-            Room("C2-306", "Phòng đơn", true, "Tầng 3", "1 người"),
-            Room("C2-307", "Phòng đôi", true, "Tầng 3", "2 người"),
-            Room("C2-308", "Phòng gia đình", true, "Tầng 3", "4 người"),
-            Room("C2-401", "Phòng đơn", true, "Tầng 4", "1 người")
-        )
-    }
-    
-    val availableRooms = rooms.filter { it.isAvailable }
-    val occupiedRooms = rooms.filter { !it.isAvailable }
-    
-    var selectedRoomNumber by remember { mutableStateOf<String?>(null) }
+    val availableRooms = uiState.availableRooms
+    val occupiedRooms = uiState.occupiedRooms
+    val selectedRoomNumber = uiState.selectedRoomNumber
+    val isLoading = uiState.isLoading
+    val errorMessage = uiState.errorMessage
 
     Column(
         modifier = modifier
@@ -1344,87 +1336,148 @@ fun RoomListScreen(
         
         // Content
         Box(modifier = Modifier.weight(1f)) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
-            ) {
-                // Phòng còn trống
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+            when {
+                isLoading -> {
+                    // Loading indicator
                     Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF10B981))
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Phòng còn trống (${availableRooms.size})",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF111827)
-                        )
-                    )
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                color = Color(0xFFFF7A1A)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Đang tải danh sách phòng...",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color(0xFF6B7280)
+                                )
+                            )
+                        }
+                    }
                 }
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                availableRooms.forEach { room ->
-                    RoomCard(
-                        room = room,
-                        isSelected = selectedRoomNumber == room.number,
-                        onClick = {
-                            selectedRoomNumber = if (selectedRoomNumber == room.number) {
-                                null
-                            } else {
-                                room.number
+                errorMessage != null -> {
+                    // Error message
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(32.dp)
+                        ) {
+                            Text(
+                                text = "⚠️",
+                                fontSize = 48.sp
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = errorMessage,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color(0xFFDC2626),
+                                    textAlign = TextAlign.Center
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFFF7A1A))
+                                    .clickable { viewModel.refresh() }
+                                    .padding(horizontal = 24.dp, vertical = 12.dp)
+                            ) {
+                                Text(
+                                    text = "Thử lại",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = Color.White,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                )
                             }
                         }
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // Phòng đã đầy
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Box(
+                else -> {
+                    Column(
                         modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFEF4444))
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Phòng đã đầy (${occupiedRooms.size})",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF111827)
-                        )
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                occupiedRooms.forEach { room ->
-                    RoomCard(
-                        room = room,
-                        isSelected = false,
-                        onClick = {
-                            Toast.makeText(context, "Phòng ${room.number} đã đầy", Toast.LENGTH_SHORT).show()
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp)
+                    ) {
+                        // Phòng còn trống
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF10B981))
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Phòng còn trống (${availableRooms.size})",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF111827)
+                                )
+                            )
                         }
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        availableRooms.forEach { room ->
+                            RoomCardData(
+                                room = room,
+                                isSelected = selectedRoomNumber == room.number,
+                                onClick = { viewModel.selectRoom(room.number) }
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Phòng đã đầy
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFEF4444))
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Phòng đã đầy (${occupiedRooms.size})",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF111827)
+                                )
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        occupiedRooms.forEach { room ->
+                            RoomCardData(
+                                room = room,
+                                isSelected = false,
+                                onClick = {
+                                    Toast.makeText(context, "Phòng ${room.number} đã đầy", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                        
+                        Spacer(modifier = Modifier.height(80.dp))
+                    }
                 }
-                
-                Spacer(modifier = Modifier.height(80.dp))
             }
         }
         
@@ -1469,6 +1522,123 @@ fun RoomListScreen(
 @Composable
 fun RoomCard(
     room: Room,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = room.isAvailable) { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = when {
+                isSelected -> Color(0xFFEEF2FF)
+                !room.isAvailable -> Color(0xFFF9FAFB)
+                else -> Color.White
+            }
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 6.dp else 2.dp
+        ),
+        border = if (isSelected) {
+            androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF1D4ED8))
+        } else null
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon phòng
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        if (room.isAvailable) Color(0xFFDCFCE7) else Color(0xFFFEE2E2)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "🏠",
+                    fontSize = 28.sp
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // Thông tin phòng
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = room.number,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSelected) Color(0xFF1D4ED8) else Color(0xFF111827)
+                    )
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = room.type,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color(0xFF6B7280)
+                    )
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row {
+                    Text(
+                        text = room.floor,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                    )
+                    Text(
+                        text = " • ",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color.Gray
+                        )
+                    )
+                    Text(
+                        text = room.capacity,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // Badge trạng thái
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(
+                        if (room.isAvailable) Color(0xFFDCFCE7) else Color(0xFFFEE2E2)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = if (room.isAvailable) "Còn trống" else "Đã đầy",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = if (room.isAvailable) Color(0xFF16A34A) else Color(0xFFDC2626),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                )
+            }
+        }
+    }
+}
+
+/**
+ * RoomCard cho RoomData (từ API)
+ */
+@Composable
+fun RoomCardData(
+    room: RoomData,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -2372,7 +2542,7 @@ private fun HomeScreenPreview() {
                 modifier = Modifier
                     .padding(inner)
                     .background(Color(0xFFF4F5F8)),
-                userName = "Cô Minh Hương"
+                userName = "Người dùng"
             )
         }
     }
@@ -2383,7 +2553,7 @@ private fun HomeScreenPreview() {
 private fun ServiceOrderScreenPreview() {
     SORMS_appTheme {
         ServiceOrderScreen(
-            userName = "Cô Minh Hương",
+            userName = "Người dùng",
             userEmail = "minhuong@example.com"
         )
     }
@@ -2394,7 +2564,7 @@ private fun ServiceOrderScreenPreview() {
 private fun AccountScreenPreview() {
     SORMS_appTheme {
         AccountScreen(
-            userName = "Cô Minh Hương",
+            userName = "Người dùng",
             userEmail = "minhuong@example.com"
         )
     }
