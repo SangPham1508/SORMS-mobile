@@ -1,6 +1,6 @@
 package com.example.sorms_app.data.api
 
-import com.example.sorms_app.BuildConfig
+import android.util.Base64
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -10,23 +10,34 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Retrofit Client để kết nối với API backend
- *
- * ⚠️ Thiết lập token trong BuildConfig.API_TOKEN (gradle buildConfigField)
+ * 
+ * API sử dụng Basic Authentication
  */
 object RetrofitClient {
 
-    // Lấy URL từ BuildConfig để dễ cấu hình
-    private const val DEFAULT_BASE_URL = "http://103.81.87.99:5656/api/"
-    private val BASE_URL = (BuildConfig.API_BASE_URL.takeIf { it.isNotBlank() } ?: DEFAULT_BASE_URL)
-        .let { if (it.endsWith("/")) it else "$it/" }
+    // Base URL của API
+    private const val BASE_URL = "http://103.81.87.99:5656/api/"
 
-    // Interceptor thêm header Authorization nếu có token
+    // Thông tin đăng nhập Basic Auth - THAY ĐỔI THEO THÔNG TIN CỦA BẠN
+    private const val API_USERNAME = "admin"  // TODO: Thay username của bạn
+    private const val API_PASSWORD = "admin"  // TODO: Thay password của bạn
+
+    // Tạo Basic Auth header
+    private fun createBasicAuthHeader(): String {
+        val credentials = "$API_USERNAME:$API_PASSWORD"
+        val encoded = Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
+        return "Basic $encoded"
+    }
+
+    // Interceptor thêm header Authorization với Basic Auth
     private val authInterceptor = Interceptor { chain ->
         val requestBuilder = chain.request().newBuilder()
-        val token = BuildConfig.API_TOKEN
-        if (token.isNotBlank()) {
-            requestBuilder.addHeader("Authorization", token)
+        
+        // Thêm Basic Authentication header
+        if (API_USERNAME.isNotBlank() && API_PASSWORD.isNotBlank()) {
+            requestBuilder.addHeader("Authorization", createBasicAuthHeader())
         }
+        
         // Thêm Accept để server trả JSON
         requestBuilder.addHeader("Accept", "application/json")
         chain.proceed(requestBuilder.build())
@@ -56,6 +67,7 @@ object RetrofitClient {
         retrofit.create(RoomApiService::class.java)
     }
 }
+
 
 
 
