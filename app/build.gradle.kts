@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    kotlin("kapt")
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -17,11 +19,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        // API config - chỉnh sửa giá trị trong gradle.properties hoặc tại đây
-        // Ví dụ token bearer: "Bearer your_token_here"
-        buildConfigField("String", "API_BASE_URL", "\"http://103.81.87.99:5656/api/\"")
-        buildConfigField("String", "API_TOKEN", "\"\"")
     }
 
     buildTypes {
@@ -31,6 +28,23 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
+            // keep default
+        }
+    }
+
+    flavorDimensions += "env"
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+            buildConfigField("String", "API_BASE_URL", "\"http://103.81.87.99:5656/api/\"")
+            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"284260188230-61kromthtekhru3cmv3uj05nfa3c5g8p.apps.googleusercontent.com\"")
+        }
+        create("prod") {
+            dimension = "env"
+            buildConfigField("String", "API_BASE_URL", "\"https://backend.sorms.online/api/\"")
+            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"284260188230-61kromthtekhru3cmv3uj05nfa3c5g8p.apps.googleusercontent.com\"")
         }
     }
     compileOptions {
@@ -73,6 +87,17 @@ dependencies {
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // DataStore for token persistence
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Hilt for Dependency Injection
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    // Navigation Compose
+    implementation("androidx.navigation:navigation-compose:2.7.7")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

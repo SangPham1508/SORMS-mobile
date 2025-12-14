@@ -1,0 +1,308 @@
+# SORMS Project - Kotlin & Android Development Rules
+
+## Project Overview
+SORMS (Smart Office Room Management System) - Multi-platform application with:
+- Backend: Spring Boot 3.3.5 with Kotlin
+- Mobile: Android with Jetpack Compose
+- Web: Next.js 15 with React 19
+
+## Kotlin Spring Boot Rules (Backend)
+
+### Project Structure
+```
+src/main/kotlin/com/example/sorms/
+├── controller/          # REST API endpoints
+├── service/             # Business logic
+├── repository/          # Data access layer
+├── model/               # DTOs and entities
+├── domain/              # Domain models
+├── exception/           # Custom exceptions
+├── security/            # Security configuration
+├── config/              # Spring configuration
+├── utils/               # Utility functions
+└── SormsApplication.kt  # Main entry point
+```
+
+### Naming Conventions
+- Classes: PascalCase (UserService, BookingDTO)
+- Functions: camelCase (getUserById, createBooking)
+- Variables: camelCase (userName, maxConnections)
+- Constants: UPPER_SNAKE_CASE (MAX_RETRY_ATTEMPTS, DEFAULT_TIMEOUT)
+
+### Code Style
+- Use `val` by default, only use `var` when mutation is necessary
+- Limit variable scope to where they are used
+- Use 4-space indentation
+- Keep functions short and focused
+- Write clear, expressive code instead of clever one-liners
+
+### Idiomatic Kotlin
+- Use data classes for DTOs: `data class UserDTO(...)`
+- Use default and named parameters instead of overloading
+- Use `when` expressions instead of if-else chains
+- Create extension functions for reusable behavior
+- Use scope functions (apply, let, also, run, with) appropriately
+- Handle nullability with safe-call operators (?.) and Elvis operator (?:)
+- Avoid not-null assertion (!!)
+- Use functional collection operations (filter, map, forEach)
+- Use string templates instead of concatenation
+
+### Implementation Patterns
+- Inject dependencies via constructor parameters
+- Keep classes final by default
+- Use object declarations for singletons
+- Favor composition over inheritance
+- Use sealed classes for type safety
+- Use enum classes for fixed sets of constants
+- Return nullable types or result wrappers instead of throwing exceptions
+- Use 'use' function for resource management
+- Minimize visibility (use private/internal)
+- Use Kotlin coroutines with suspend functions
+
+### Spring Boot Specifics
+- Use @Service, @Repository, @Controller annotations
+- Implement clean architecture with domain, data, and presentation layers
+- Use Spring Data JPA repositories
+- Implement proper exception handling with @ControllerAdvice
+- Use Spring Security for authentication
+- Implement JWT token-based authentication
+- Use Liquibase for database migrations
+- Configure application.yaml for environment-specific settings
+
+## Android Jetpack Compose Rules (Mobile)
+
+### Project Structure
+```
+app/src/main/java/com/example/sorms_app/
+├── data/
+│   ├── repository/      # Repository implementations
+│   ├── datasource/      # Local/Remote data sources
+│   └── models/          # Data models
+├── domain/
+│   ├── usecases/        # Business logic use cases
+│   ├── models/          # Domain models
+│   └── repository/      # Repository interfaces
+├── presentation/
+│   ├── screens/         # Compose screens
+│   ├── components/      # Reusable components
+│   ├── theme/           # Theme configuration
+│   └── viewmodels/      # ViewModels
+├── di/                  # Dependency injection (Hilt)
+├── utils/               # Utility functions
+└── MainActivity.kt      # Entry point
+```
+
+### General Best Practices
+- Follow Material Design 3 guidelines
+- Implement clean architecture with domain, data, and presentation layers
+- Use Kotlin coroutines and Flow for asynchronous operations
+- Implement dependency injection using Hilt
+- Follow unidirectional data flow with ViewModel and UI State
+- Use Compose navigation for screen management
+- Implement proper state hoisting and composition
+
+### UI Guidelines
+- Use remember and derivedStateOf appropriately
+- Implement proper recomposition optimization
+- Use proper Compose modifiers ordering (size, padding, alignment, interaction, drawing)
+- Follow composable function naming conventions (descriptive names)
+- Implement proper preview annotations with multiple states
+- Use proper theming with MaterialTheme
+- Follow accessibility guidelines
+- Implement proper animation patterns
+
+### Performance Guidelines
+- Minimize recomposition using proper keys
+- Use proper lazy loading with LazyColumn and LazyRow
+- Implement efficient image loading
+- Use proper state management to prevent unnecessary updates
+- Follow proper lifecycle awareness
+- Implement proper memory management
+- Use proper background processing with coroutines
+
+### Testing Guidelines
+- Write unit tests for ViewModels and UseCases
+- Implement UI tests using Compose testing framework
+- Use fake repositories for testing
+- Implement proper test coverage (aim for >80%)
+- Use proper testing coroutine dispatchers
+
+### Hilt Dependency Injection
+- Use @HiltAndroidApp on Application class
+- Use @HiltViewModel for ViewModels
+- Use @Module and @Provides for dependency configuration
+- Use @Singleton for single-instance dependencies
+- Use @InstallIn for module scope
+
+### State Management
+- Define sealed classes for UI states
+- Use MutableStateFlow for state management
+- Use StateFlow for read-only state exposure
+- Implement unidirectional data flow
+- Use update() function for state updates
+
+### Coroutines
+- Use viewModelScope for ViewModel coroutines
+- Use suspend functions for async operations
+- Use Flow for reactive data streams
+- Use stateIn() for converting Flow to StateFlow
+- Use proper dispatchers (IO, Main, Default)
+
+## Common Rules for Both Projects
+
+### Error Handling
+- Use Result<T> wrapper classes for expected errors
+- Throw exceptions only for unexpected/programming errors
+- Implement proper error messages for users
+- Log errors appropriately
+
+### Testing
+- Write unit tests for business logic
+- Use dependency injection for testability
+- Use mocking frameworks (Mockk for Kotlin)
+- Aim for >80% code coverage
+- Test happy path, error cases, and edge cases
+
+### Code Quality
+- Keep functions small and focused
+- Follow SOLID principles
+- Use meaningful variable and function names
+- Add comments for complex logic
+- Keep code DRY (Don't Repeat Yourself)
+- Use appropriate design patterns
+
+### Documentation
+- Write clear commit messages
+- Document public APIs
+- Add comments for non-obvious code
+- Keep README files updated
+- Document configuration requirements
+
+### Security
+- Never commit secrets or API keys
+- Use environment variables for configuration
+- Validate all user inputs
+- Implement proper authentication and authorization
+- Use HTTPS for API communication
+- Implement proper JWT token handling
+
+## API Integration
+
+### Backend API
+- Base URL: http://103.81.87.99:5656/api
+- Port: 5656
+- Context Path: /api
+- Authentication: JWT Bearer token
+
+### Request/Response Format
+- Content-Type: application/json
+- Authorization: Bearer <JWT_TOKEN>
+- Response format: { code, message, data }
+
+### Error Handling
+- HTTP 200: Success
+- HTTP 400: Bad Request
+- HTTP 401: Unauthorized
+- HTTP 403: Forbidden
+- HTTP 404: Not Found
+- HTTP 500: Server Error
+
+## Database
+- Type: MySQL
+- Host: 103.81.87.99:4343
+- Database: sorms
+- Migrations: Liquibase
+
+## External Services
+- Google OAuth2: Authentication
+- Firebase: Push notifications
+- Cloudinary: Image storage
+- AI Recognition Service: Room occupancy detection
+
+## Development Workflow
+- Use feature branches: feature/SORMS-XXX-description
+- Use conventional commits
+- Maintain >80% code coverage
+- Run linting before commits
+- Test locally before pushing
+- Create pull requests for code review
+
+## File Naming
+- Kotlin files: PascalCase (UserService.kt, BookingDTO.kt)
+- Avoid vague names (Utils.kt, Helper.kt, Manager.kt)
+- One public class per file
+- File name matches primary class name
+
+## Imports
+- Organize imports alphabetically
+- Remove unused imports
+- Use explicit imports (avoid wildcard imports)
+- Group imports by source (java, javax, kotlin, third-party, local)
+
+## Comments
+- Write comments for WHY, not WHAT
+- Keep comments up-to-date with code
+- Use TODO, FIXME, HACK comments appropriately
+- Avoid obvious comments
+
+## Performance
+- Minimize object creation in loops
+- Use appropriate data structures
+- Avoid unnecessary string concatenation
+- Cache expensive computations
+- Use lazy initialization where appropriate
+
+## Accessibility
+- Add content descriptions to UI elements
+- Use proper color contrast
+- Support keyboard navigation
+- Test with accessibility tools
+- Follow Material Design accessibility guidelines
+
+## Configuration
+- Use environment variables for sensitive data
+- Use application.yaml for Spring Boot configuration
+- Use gradle.properties for Android configuration
+- Document all configuration options
+- Provide example configuration files
+
+## Build and Deployment
+- Backend: Maven with Spring Boot
+- Mobile: Gradle with Android
+- Web: npm with Next.js
+- Use Docker for containerization
+- Implement CI/CD pipelines
+
+## Version Control
+- Use meaningful commit messages
+- Keep commits atomic and focused
+- Use branches for features and fixes
+- Squash commits before merging
+- Tag releases with version numbers
+
+## Logging
+- Use appropriate log levels (DEBUG, INFO, WARN, ERROR)
+- Log important business events
+- Avoid logging sensitive information
+- Use structured logging where possible
+- Include context in log messages
+
+## Dependencies
+- Keep dependencies up-to-date
+- Use compatible versions
+- Document dependency requirements
+- Minimize external dependencies
+- Use dependency management tools
+
+## Code Review Checklist
+- [ ] Code follows naming conventions
+- [ ] Code is properly formatted
+- [ ] No unused imports or variables
+- [ ] Proper error handling
+- [ ] Tests are included
+- [ ] Documentation is updated
+- [ ] No hardcoded values
+- [ ] No security issues
+- [ ] Performance is acceptable
+- [ ] Accessibility is considered
+
