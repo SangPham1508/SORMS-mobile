@@ -1,11 +1,11 @@
 package com.example.sorms_app.data.repository
 
 import android.util.Log
-import com.example.sorms_app.data.api.RetrofitClient
-import com.example.sorms_app.data.api.ApiResponse
-import com.example.sorms_app.data.model.RoomData
-import com.example.sorms_app.data.model.RoomResponse
-import com.example.sorms_app.data.model.toRoomData
+import com.example.sorms_app.data.datasource.remote.RetrofitClient
+import com.example.sorms_app.data.datasource.remote.ApiResponse
+import com.example.sorms_app.data.models.RoomData
+import com.example.sorms_app.data.models.RoomResponse
+import com.example.sorms_app.data.models.toRoomData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -122,6 +122,10 @@ class RoomRepository {
         }
     }
 }
+
+
+
+
 
 
 

@@ -42,15 +42,25 @@ class BookingRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getUserBookings(): Flow<List<Booking>> = getAllBookings()
+
     private fun BookingResponse.toDomainModel(): Booking {
         val isoFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val bookingId = this.id ?: 0L
         return Booking(
-            id = this.id.toString(),
+            id = bookingId,
+            code = this.code ?: "BK-$bookingId",
             roomName = this.roomCode ?: "(Không có phòng)",
             buildingName = "Dãy A", // Placeholder, as this info is not in the response
-            checkInDate = this.checkinDate?.let { isoFormatter.parse(it) } ?: Date(),
-            checkOutDate = this.checkoutDate?.let { isoFormatter.parse(it) } ?: Date(),
-            status = this.status ?: "UNKNOWN"
+            checkInDate = this.checkinDate?.let { 
+                try { isoFormatter.parse(it) } catch (e: Exception) { null }
+            } ?: Date(),
+            checkOutDate = this.checkoutDate?.let { 
+                try { isoFormatter.parse(it) } catch (e: Exception) { null }
+            } ?: Date(),
+            status = this.status ?: "UNKNOWN",
+            numGuests = this.numGuests ?: 1,
+            note = this.note
         )
     }
 }

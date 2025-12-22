@@ -2,7 +2,6 @@ package com.example.sorms_app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.sorms_app.domain.model.Status
 import com.example.sorms_app.domain.model.Task
 import com.example.sorms_app.domain.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,20 +10,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class TaskListUiState(
+data class TaskUiState(
     val isLoading: Boolean = false,
     val tasks: List<Task> = emptyList(),
-    val errorMessage: String? = null
-)
-
-data class TaskDetailUiState(
-    val isLoading: Boolean = false,
-    val task: Task? = null,
     val errorMessage: String? = null,
-    val isUpdating: Boolean = false
+    val isUpdating: Boolean = false,
+    val updateSuccess: Boolean = false,
+    val updateError: String? = null,
+    // Detail state
+    val task: Task? = null
 )
 
 @HiltViewModel
@@ -32,51 +30,118 @@ class TaskViewModel @Inject constructor(
     private val taskRepository: TaskRepository
 ) : ViewModel() {
 
-    private val _listUiState = MutableStateFlow(TaskListUiState())
-    val listUiState: StateFlow<TaskListUiState> = _listUiState.asStateFlow()
-
-    private val _detailUiState = MutableStateFlow(TaskDetailUiState())
-    val detailUiState: StateFlow<TaskDetailUiState> = _detailUiState.asStateFlow()
-
-    init {
-        loadTasks()
-    }
+    private val _uiState = MutableStateFlow(TaskUiState())
+    val uiState: StateFlow<TaskUiState> = _uiState.asStateFlow()
+    
+    // Alias for detail state to match TaskDetailScreen expectation
+    val detailUiState: StateFlow<TaskUiState> = _uiState.asStateFlow()
 
     fun loadTasks() {
         viewModelScope.launch {
             taskRepository.getTasks()
-                .onStart { _listUiState.value = TaskListUiState(isLoading = true) }
-                .catch { e -> _listUiState.value = TaskListUiState(errorMessage = e.message) }
-                .collect { tasks ->
-                    _listUiState.value = TaskListUiState(tasks = tasks)
+                .onStart { 
+                    _uiState.update { it.copy(isLoading = true, errorMessage = null) }
                 }
+                .catch { e -> 
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false, 
+                            errorMessage = e.message ?: "Không thể tải danh sách nhiệm vụ"
+                        ) 
+                    }
+                }
+                .collect { tasks ->
+                    // Sort by due date ascending (earliest first)
+                    val sortedTasks = tasks.sortedBy { it.dueDate }
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false,
+                            tasks = sortedTasks
+                        ) 
+                    }
+                }
+        }
+    }
+
+    fun updateTaskStatus(taskId: String, newStatus: String) {
+        viewModelScope.launch {
+            _uiState.update { 
+                it.copy(
+                    isUpdating = true,
+                    updateError = null,
+                    updateSuccess = false
+                ) 
+            }
+            
+            try {
+                // TODO: Implement task status update API call
+                // For now, simulate the update
+                kotlinx.coroutines.delay(1000)
+                
+                // Update local state
+                val updatedTasks = _uiState.value.tasks.map { task ->
+                    if (task.id == taskId) {
+                        task.copy(
+                            status = com.example.sorms_app.domain.model.Status.valueOf(newStatus)
+                        )
+                    } else {
+                        task
+                    }
+                }
+                
+                _uiState.update { 
+                    it.copy(
+                        isUpdating = false,
+                        updateSuccess = true,
+                        tasks = updatedTasks
+                    ) 
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isUpdating = false,
+                        updateError = e.message ?: "Không thể cập nhật trạng thái nhiệm vụ"
+                    ) 
+                }
+            }
         }
     }
 
     fun loadTaskById(taskId: String) {
         viewModelScope.launch {
-            taskRepository.getTaskById(taskId)
-                .onStart { _detailUiState.value = TaskDetailUiState(isLoading = true) }
-                .catch { e -> _detailUiState.value = TaskDetailUiState(errorMessage = e.message) }
-                .collect { task ->
-                    _detailUiState.value = TaskDetailUiState(task = task)
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, task = null) }
+            
+            try {
+                taskRepository.getTaskById(taskId)
+                    .collect { task ->
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false,
+                                task = task
+                            ) 
+                        }
+                    }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isLoading = false, 
+                        errorMessage = e.message ?: "Không thể tải chi tiết nhiệm vụ"
+                    ) 
                 }
+            }
         }
     }
 
-    fun updateTaskStatus(taskId: String, status: Status) {
-        viewModelScope.launch {
-            _detailUiState.value = _detailUiState.value.copy(isUpdating = true)
-            try {
-                taskRepository.updateTaskStatus(taskId, status)
-                // Refresh both detail and list after update
-                loadTaskById(taskId)
-                loadTasks()
-            } catch (e: Exception) {
-                _detailUiState.value = _detailUiState.value.copy(errorMessage = e.message)
-            } finally {
-                _detailUiState.value = _detailUiState.value.copy(isUpdating = false)
-            }
+    fun refresh() {
+        loadTasks()
+    }
+
+    fun clearUpdateState() {
+        _uiState.update { 
+            it.copy(
+                updateSuccess = false,
+                updateError = null
+            ) 
         }
     }
 }

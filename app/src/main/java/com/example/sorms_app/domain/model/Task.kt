@@ -6,10 +6,11 @@ data class Task(
     val id: String,
     val title: String,
     val description: String?,
-    val priority: Priority,
+    val priority: Priority?,
     val status: Status,
     val dueDate: Date?,
-    val assignedBy: String?
+    val assignedBy: String?,
+    val booking: Booking? = null  // Add booking reference for staff tasks
 )
 
 enum class Priority {

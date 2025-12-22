@@ -70,10 +70,12 @@ fun StaffMainScreen(onLogout: () -> Unit) {
             startDestination = StaffScreen.Tasks.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(StaffScreen.Tasks.route) { TaskNavigation() } 
+            composable(StaffScreen.Tasks.route) { 
+                TaskNavigation()
+            } 
             composable(StaffScreen.Schedule.route) { ScheduleScreen() }
             composable(StaffScreen.Profile.route) { 
-                ProfileScreen(onLogout = onLogout)
+                StaffProfileScreen(onLogout = onLogout)
             }
         }
     }

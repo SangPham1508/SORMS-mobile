@@ -21,7 +21,10 @@ class ServiceRepositoryImpl @Inject constructor(
             val response = api.getAvailableServices()
             if (response.isSuccessful) {
                 val serviceResponses = response.body()?.data ?: emptyList()
-                val services = serviceResponses.map { it.toDomainModel() }
+                // Filter only active services
+                val services = serviceResponses
+                    .filter { it.isActive != false }
+                    .map { it.toDomainModel() }
                 emit(services)
             } else {
                 throw Exception("Failed to fetch services: ${response.code()} - ${response.message()}")
@@ -45,21 +48,32 @@ class ServiceRepositoryImpl @Inject constructor(
 
     private fun ServiceResponse.toDomainModel(): Service {
         return Service(
-            id = this.id,
+            id = this.id.toString(),
+            code = this.code ?: "SVC-${this.id}",
             name = this.name,
-            icon = mapIcon(this.iconName)
+            description = this.description,
+            unitPrice = this.unitPrice ?: 0.0,
+            unitName = this.unitName ?: "lần",
+            isActive = this.isActive ?: true,
+            icon = mapIcon(this.iconName ?: this.code)
         )
     }
 
-    private fun mapIcon(iconName: String?): ImageVector {
-        return when (iconName?.lowercase()) {
-            "cleaning" -> Icons.Default.CleaningServices
-            "laundry" -> Icons.Default.LocalLaundryService
-            "food" -> Icons.Default.Restaurant
-            "repair" -> Icons.Default.Report
-            "towel" -> Icons.Default.DryCleaning
-            "internet" -> Icons.Default.Wifi
-            else -> Icons.Default.Build // Default icon
+    private fun mapIcon(identifier: String?): ImageVector {
+        return when (identifier?.lowercase()) {
+            "cleaning", "clean", "don_phong" -> Icons.Default.CleaningServices
+            "laundry", "giat_ui", "giat" -> Icons.Default.LocalLaundryService
+            "food", "an_uong", "restaurant" -> Icons.Default.Restaurant
+            "repair", "sua_chua", "maintenance" -> Icons.Default.Build
+            "towel", "khan", "drycleaning" -> Icons.Default.DryCleaning
+            "internet", "wifi", "mang" -> Icons.Default.Wifi
+            "parking", "dau_xe", "xe" -> Icons.Default.LocalParking
+            "gym", "tap_gym", "fitness" -> Icons.Default.FitnessCenter
+            "pool", "ho_boi", "swim" -> Icons.Default.Pool
+            "spa", "massage" -> Icons.Default.Spa
+            "medical", "y_te", "health" -> Icons.Default.MedicalServices
+            "security", "bao_ve", "an_ninh" -> Icons.Default.Security
+            else -> Icons.Default.MiscellaneousServices
         }
     }
 }

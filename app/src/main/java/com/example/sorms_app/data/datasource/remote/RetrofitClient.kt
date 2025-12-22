@@ -31,7 +31,8 @@ object RetrofitClient {
     }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        // Use HEADERS for debugging, NONE for production to avoid ANR from excessive logging
+        level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.HEADERS else HttpLoggingInterceptor.Level.NONE
     }
 
     private val okHttpClient = OkHttpClient.Builder()
@@ -78,5 +79,11 @@ object RetrofitClient {
         retrofit.create(ServiceApiService::class.java)
     }
 
+    val orderApiService: OrderApiService by lazy {
+        retrofit.create(OrderApiService::class.java)
+    }
 
+    val userApiService: UserApiService by lazy {
+        retrofit.create(UserApiService::class.java)
+    }
 }

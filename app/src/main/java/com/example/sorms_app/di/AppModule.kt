@@ -4,11 +4,30 @@ import android.content.Context
 import com.example.sorms_app.data.datasource.remote.AuthApiService
 import com.example.sorms_app.data.datasource.remote.BookingApiService
 import com.example.sorms_app.data.datasource.remote.NotificationApiService
+import com.example.sorms_app.data.datasource.remote.OrderApiService
 import com.example.sorms_app.data.datasource.remote.RetrofitClient
 import com.example.sorms_app.data.datasource.remote.ServiceApiService
 import com.example.sorms_app.data.datasource.remote.TaskApiService
-import com.example.sorms_app.data.repository.*
-import com.example.sorms_app.domain.repository.*
+import com.example.sorms_app.data.datasource.remote.UserApiService
+import com.example.sorms_app.data.repository.ActivityRepositoryImpl
+import com.example.sorms_app.data.repository.AuthRepository
+import com.example.sorms_app.data.repository.BookingRepositoryImpl
+import com.example.sorms_app.data.repository.NotificationRepositoryImpl
+import com.example.sorms_app.data.repository.OrderRepositoryImpl
+import com.example.sorms_app.data.repository.RoomRepository
+import com.example.sorms_app.data.repository.RoomTypeRepository
+import com.example.sorms_app.data.repository.ScheduleRepositoryImpl
+import com.example.sorms_app.data.repository.ServiceRepositoryImpl
+import com.example.sorms_app.data.repository.TaskRepositoryImpl
+import com.example.sorms_app.data.repository.UserRepositoryImpl
+import com.example.sorms_app.domain.repository.ActivityRepository
+import com.example.sorms_app.domain.repository.BookingRepository
+import com.example.sorms_app.domain.repository.NotificationRepository
+import com.example.sorms_app.domain.repository.OrderRepository
+import com.example.sorms_app.domain.repository.ScheduleRepository
+import com.example.sorms_app.domain.repository.ServiceRepository
+import com.example.sorms_app.domain.repository.TaskRepository
+import com.example.sorms_app.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -48,6 +67,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindScheduleRepository(scheduleRepositoryImpl: ScheduleRepositoryImpl): ScheduleRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindOrderRepository(orderRepositoryImpl: OrderRepositoryImpl): OrderRepository
 }
 
 @Module
@@ -58,6 +81,18 @@ object AppModule {
     @Singleton
     fun provideAuthRepository(@ApplicationContext context: Context): AuthRepository {
         return AuthRepository(context) // AuthRepository has a dependency on Context
+    }
+
+    @Provides
+    @Singleton
+    fun provideRoomRepository(): RoomRepository {
+        return RoomRepository()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRoomTypeRepository(): RoomTypeRepository {
+        return RoomTypeRepository()
     }
 
     @Provides
@@ -79,4 +114,12 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTaskApiService(): TaskApiService = RetrofitClient.taskApiService
+
+    @Provides
+    @Singleton
+    fun provideOrderApiService(): OrderApiService = RetrofitClient.orderApiService
+
+    @Provides
+    @Singleton
+    fun provideUserApiService(): UserApiService = RetrofitClient.userApiService
 }

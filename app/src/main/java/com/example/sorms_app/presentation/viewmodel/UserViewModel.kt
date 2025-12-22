@@ -28,17 +28,24 @@ class UserViewModel @Inject constructor(
     val uiState: StateFlow<UserProfileUiState> = _uiState.asStateFlow()
 
     init {
-        loadCurrentUser()
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(100) // Small delay to let UI render
+            loadCurrentUser()
+        }
     }
 
     fun loadCurrentUser() {
         viewModelScope.launch {
-            userRepository.getCurrentUser()
-                .onStart { _uiState.value = UserProfileUiState(isLoading = true) }
-                .catch { e -> _uiState.value = UserProfileUiState(errorMessage = e.message) }
-                .collect { user ->
-                    _uiState.value = UserProfileUiState(user = user)
-                }
+            _uiState.value = UserProfileUiState(isLoading = true)
+            try {
+                userRepository.getCurrentUser()
+                    .catch { e -> _uiState.value = UserProfileUiState(errorMessage = e.message) }
+                    .collect { user ->
+                        _uiState.value = UserProfileUiState(user = user)
+                    }
+            } catch (e: Exception) {
+                _uiState.value = UserProfileUiState(errorMessage = e.message ?: "Lỗi không xác định")
+            }
         }
     }
 }

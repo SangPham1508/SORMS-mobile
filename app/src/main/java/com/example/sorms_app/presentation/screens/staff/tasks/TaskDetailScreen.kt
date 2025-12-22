@@ -85,14 +85,16 @@ private fun TaskDetails(task: Task) {
         Text(text = task.title, style = MaterialTheme.typography.headlineSmall)
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SormsBadge(
-                text = task.priority.name,
-                tone = when (task.priority) {
-                    com.example.sorms_app.domain.model.Priority.HIGH -> BadgeTone.Error
-                    com.example.sorms_app.domain.model.Priority.MEDIUM -> BadgeTone.Warning
-                    else -> BadgeTone.Default
-                }
-            )
+            task.priority?.let { priority ->
+                SormsBadge(
+                    text = priority.name,
+                    tone = when (priority) {
+                        com.example.sorms_app.domain.model.Priority.HIGH -> BadgeTone.Error
+                        com.example.sorms_app.domain.model.Priority.MEDIUM -> BadgeTone.Warning
+                        else -> BadgeTone.Default
+                    }
+                )
+            }
             SormsBadge(
                 text = task.status.name.replace("_", " "),
                 tone = if (task.status == Status.COMPLETED) BadgeTone.Success else BadgeTone.Default
@@ -118,19 +120,19 @@ private fun TaskActions(task: Task, viewModel: TaskViewModel) {
     ) {
         if (task.status == Status.PENDING) {
             SormsButton(
-                onClick = { viewModel.updateTaskStatus(task.id, Status.REJECTED) },
+                onClick = { viewModel.updateTaskStatus(task.id, "REJECTED") },
                 text = "Từ chối",
                 modifier = Modifier.weight(1f),
                 variant = ButtonVariant.Danger
             )
             SormsButton(
-                onClick = { viewModel.updateTaskStatus(task.id, Status.IN_PROGRESS) }, // Assuming Accept moves to IN_PROGRESS
+                onClick = { viewModel.updateTaskStatus(task.id, "IN_PROGRESS") }, // Assuming Accept moves to IN_PROGRESS
                 text = "Chấp nhận",
                 modifier = Modifier.weight(1f)
             )
         } else if (task.status == Status.IN_PROGRESS) {
             SormsButton(
-                onClick = { viewModel.updateTaskStatus(task.id, Status.COMPLETED) },
+                onClick = { viewModel.updateTaskStatus(task.id, "COMPLETED") },
                 text = "Hoàn thành",
                 modifier = Modifier.fillMaxWidth()
             )

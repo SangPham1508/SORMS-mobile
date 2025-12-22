@@ -1,7 +1,7 @@
 package com.example.sorms_app.data.repository
 
-import com.example.sorms_app.data.api.RetrofitClient
-import com.example.sorms_app.data.model.RoomTypeResponse
+import com.example.sorms_app.data.datasource.remote.RetrofitClient
+import com.example.sorms_app.data.models.RoomTypeResponse
 
 sealed class RoomTypeResult {
     data class Success(val data: List<RoomTypeResponse>) : RoomTypeResult()

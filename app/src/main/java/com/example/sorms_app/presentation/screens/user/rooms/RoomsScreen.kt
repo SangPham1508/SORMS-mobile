@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.sorms_app.data.model.RoomData
+import com.example.sorms_app.data.models.RoomData
 import com.example.sorms_app.presentation.viewmodel.RoomViewModel
 
 @Composable

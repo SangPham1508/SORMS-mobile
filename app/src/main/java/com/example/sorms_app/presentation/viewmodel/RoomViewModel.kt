@@ -2,13 +2,16 @@ package com.example.sorms_app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.sorms_app.data.model.RoomData
+import com.example.sorms_app.data.models.RoomData
 import com.example.sorms_app.data.repository.Result
 import com.example.sorms_app.data.repository.RoomRepository
+import com.example.sorms_app.data.repository.RoomTypeRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Trạng thái UI cho màn hình danh sách phòng
@@ -16,22 +19,23 @@ import kotlinx.coroutines.launch
 data class RoomUiState(
     val isLoading: Boolean = false,
     val rooms: List<RoomData> = emptyList(),
-    val availableRooms: List<RoomData> = emptyList(),
-    val occupiedRooms: List<RoomData> = emptyList(),
+    val filteredRooms: List<RoomData> = emptyList(),
+    val selectedFilter: String = "Tất cả",
     val errorMessage: String? = null,
     val selectedRoomNumber: String? = null,
     // Filters
-    val roomTypes: List<com.example.sorms_app.data.model.RoomTypeResponse> = emptyList(),
+    val roomTypes: List<com.example.sorms_app.data.models.RoomTypeResponse> = emptyList(),
     val selectedRoomTypeId: Long? = null
 )
 
 /**
  * ViewModel quản lý dữ liệu phòng
  */
-class RoomViewModel : ViewModel() {
-
-    private val repository = RoomRepository()
-    private val roomTypeRepository = com.example.sorms_app.data.repository.RoomTypeRepository()
+@HiltViewModel
+class RoomViewModel @Inject constructor(
+    private val repository: RoomRepository,
+    private val roomTypeRepository: RoomTypeRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RoomUiState())
     val uiState: StateFlow<RoomUiState> = _uiState.asStateFlow()
@@ -43,6 +47,7 @@ class RoomViewModel : ViewModel() {
     private fun loadInitial() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            
             // Load room types (ignore errors)
             when (val types = roomTypeRepository.getAll()) {
                 is com.example.sorms_app.data.repository.RoomTypeResult.Success -> {
@@ -67,8 +72,7 @@ class RoomViewModel : ViewModel() {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         rooms = allRooms,
-                        availableRooms = allRooms.filter { it.status.equals("AVAILABLE", ignoreCase = true) },
-                        occupiedRooms = allRooms.filter { !it.status.equals("AVAILABLE", ignoreCase = true) },
+                        filteredRooms = filterRooms(allRooms, _uiState.value.selectedFilter),
                         errorMessage = null
                     )
                 }
@@ -82,6 +86,25 @@ class RoomViewModel : ViewModel() {
                     _uiState.value = _uiState.value.copy(isLoading = true)
                 }
             }
+        }
+    }
+
+    /**
+     * Set filter for rooms
+     */
+    fun setFilter(filter: String) {
+        val currentRooms = _uiState.value.rooms
+        _uiState.value = _uiState.value.copy(
+            selectedFilter = filter,
+            filteredRooms = filterRooms(currentRooms, filter)
+        )
+    }
+
+    private fun filterRooms(rooms: List<RoomData>, filter: String): List<RoomData> {
+        return when (filter) {
+            "Khả dụng" -> rooms.filter { it.status.equals("AVAILABLE", ignoreCase = true) }
+            "Đang bảo trì" -> rooms.filter { it.status.equals("MAINTENANCE", ignoreCase = true) }
+            else -> rooms // "Tất cả"
         }
     }
 
@@ -102,8 +125,7 @@ class RoomViewModel : ViewModel() {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         rooms = rooms,
-                        availableRooms = rooms, // đã lọc AVAILABLE trong repository
-                        occupiedRooms = emptyList(),
+                        filteredRooms = filterRooms(rooms, _uiState.value.selectedFilter),
                         errorMessage = null
                     )
                 }

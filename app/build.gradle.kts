@@ -39,11 +39,13 @@ android {
         create("dev") {
             dimension = "env"
             buildConfigField("String", "API_BASE_URL", "\"http://103.81.87.99:5656/api/\"")
+            // Web client ID từ project capstone-pronject (dùng cho cả Android)
             buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"284260188230-61kromthtekhru3cmv3uj05nfa3c5g8p.apps.googleusercontent.com\"")
         }
         create("prod") {
             dimension = "env"
             buildConfigField("String", "API_BASE_URL", "\"https://backend.sorms.online/api/\"")
+            // Web client ID từ project capstone-pronject
             buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"284260188230-61kromthtekhru3cmv3uj05nfa3c5g8p.apps.googleusercontent.com\"")
         }
     }
@@ -70,6 +72,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    
+    // Material Icons Extended (for CleaningServices, Task, CalendarMonth, etc.)
+    implementation("androidx.compose.material:material-icons-extended")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
@@ -98,6 +103,9 @@ dependencies {
 
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

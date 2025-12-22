@@ -4,13 +4,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.ui.graphics.vector.ImageVector
 
+/**
+ * Domain model for Service
+ * Maps to backend ServiceResponse
+ */
 data class Service(
     val id: String,
+    val code: String,
     val name: String,
-    // In a real app, the icon might be a URL or a string identifier.
-    // For simplicity, we'll keep it as an ImageVector for now.
+    val description: String?,
+    val unitPrice: Double,
+    val unitName: String,
+    val isActive: Boolean = true,
+    // Icon for UI display
     val icon: ImageVector = Icons.Default.CleaningServices
 )
-
-
-

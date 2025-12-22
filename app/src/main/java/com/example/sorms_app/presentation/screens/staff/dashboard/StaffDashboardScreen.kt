@@ -120,14 +120,16 @@ private fun TaskItem(
     SormsCard {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SormsBadge(
-                    text = task.priority.name,
-                    tone = when (task.priority) {
-                        Priority.HIGH -> BadgeTone.Error
-                        Priority.MEDIUM -> BadgeTone.Warning
-                        Priority.LOW -> BadgeTone.Default
-                    }
-                )
+                task.priority?.let { priority ->
+                    SormsBadge(
+                        text = priority.name,
+                        tone = when (priority) {
+                            Priority.HIGH -> BadgeTone.Error
+                            Priority.MEDIUM -> BadgeTone.Warning
+                            Priority.LOW -> BadgeTone.Default
+                        }
+                    )
+                }
                 SormsBadge(
                     text = task.status.name.replace("_", " "),
                     tone = if (task.status == Status.COMPLETED) BadgeTone.Success else BadgeTone.Default

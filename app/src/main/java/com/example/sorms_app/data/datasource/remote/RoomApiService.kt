@@ -1,6 +1,6 @@
 package com.example.sorms_app.data.datasource.remote
 
-import com.example.sorms_app.data.model.RoomResponse
+import com.example.sorms_app.data.models.RoomResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path

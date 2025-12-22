@@ -14,6 +14,7 @@ import javax.inject.Inject
 sealed class AuthUiState {
     object Idle : AuthUiState()
     object Loading : AuthUiState()
+    object CheckingSession : AuthUiState() // New state for initial session check
     data class Success(val roles: List<String>) : AuthUiState()
     data class Error(val message: String) : AuthUiState()
 }
@@ -23,9 +24,41 @@ class AuthViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
+    private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.CheckingSession)
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
+    init {
+        // Check for existing session when ViewModel is created
+        checkExistingSession()
+    }
+
+    /**
+     * Check if user is already logged in from previous session
+     */
+    private fun checkExistingSession() {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState.CheckingSession
+            try {
+                // Small delay to let UI render first
+                kotlinx.coroutines.delay(100)
+                when (val result = repository.checkExistingSession()) {
+                    is AuthResult.Success -> {
+                        _uiState.value = AuthUiState.Success(result.roles)
+                    }
+                    is AuthResult.Error -> {
+                        // No valid session, go to Idle (show login screen)
+                        _uiState.value = AuthUiState.Idle
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState.Idle
+            }
+        }
+    }
+
+    /**
+     * Login with Google ID Token
+     */
     fun loginWithIdToken(idToken: String) {
         _uiState.value = AuthUiState.Loading
         viewModelScope.launch {
@@ -36,6 +69,9 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Reset to Idle state (after logout)
+     */
     fun reset() {
         _uiState.value = AuthUiState.Idle
     }
