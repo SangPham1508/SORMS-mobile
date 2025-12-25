@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.sorms_app.presentation.screens.user.ServicesScreen
 import com.example.sorms_app.presentation.viewmodel.ServiceViewModel
 
 object ServiceRoutes {
@@ -24,10 +25,12 @@ fun ServiceNavigation() {
     NavHost(navController = navController, startDestination = ServiceRoutes.SERVICE_LIST) {
         composable(ServiceRoutes.SERVICE_LIST) {
             ServicesScreen(
-                viewModel = viewModel,
-                onServiceClick = { serviceId ->
-                    navController.navigate(ServiceRoutes.serviceRequest(serviceId))
-                }
+                onNavigateBack = { navController.popBackStack() },
+                onServiceSelected = { service ->
+                    navController.navigate(ServiceRoutes.serviceRequest(service.id))
+                },
+                onViewCart = { /* TODO: Navigate to cart */ },
+                viewModel = viewModel
             )
         }
         composable(

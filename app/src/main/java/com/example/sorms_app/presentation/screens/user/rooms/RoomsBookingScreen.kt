@@ -27,6 +27,9 @@ import com.example.sorms_app.presentation.components.SormsButton
 import com.example.sorms_app.presentation.components.SormsCard
 import com.example.sorms_app.presentation.components.SormsEmptyState
 import com.example.sorms_app.presentation.components.SormsLoading
+import com.example.sorms_app.presentation.components.SormsTopAppBar
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
 import com.example.sorms_app.presentation.viewmodel.RoomBookingViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,7 +42,6 @@ fun RoomsBookingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
     // Form states
     var selectedRoom by remember { mutableStateOf<RoomData?>(null) }
@@ -101,17 +103,8 @@ fun RoomsBookingScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text("Đặt phòng")
-                        Text(
-                            text = "Chọn phòng và ngày ở",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
+            SormsTopAppBar(
+                title = "Đặt phòng",
                 actions = {
                     IconButton(onClick = { viewModel.refresh() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Làm mới")
@@ -136,8 +129,8 @@ fun RoomsBookingScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),
+                    verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.listItemSpacing)
                 ) {
                     // Room Type Filter
                     item {
@@ -154,7 +147,7 @@ fun RoomsBookingScreen(
                             text = "Phòng trống (${uiState.rooms.count { it.isAvailable }})",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(vertical = 8.dp)
+                            modifier = Modifier.padding(vertical = DesignSystem.Spacing.sm)
                         )
                     }
 
@@ -163,7 +156,7 @@ fun RoomsBookingScreen(
                             SormsCard {
                                 Text(
                                     text = "Không có phòng trống",
-                                    modifier = Modifier.padding(24.dp),
+                                    modifier = Modifier.padding(DesignSystem.Spacing.lg),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -190,7 +183,7 @@ fun RoomsBookingScreen(
                                 text = "Phòng đã có người (${unavailableRooms.size})",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(vertical = 8.dp)
+                                modifier = Modifier.padding(vertical = DesignSystem.Spacing.sm)
                             )
                         }
 
@@ -226,7 +219,7 @@ fun RoomsBookingScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(12.dp),
+                                    .padding(DesignSystem.Spacing.listItemSpacing),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
@@ -251,7 +244,7 @@ fun RoomsBookingScreen(
 
                         // Check-in date
                         OutlinedTextField(
-                            value = checkInDate?.let { dateFormat.format(it) } ?: "",
+                            value = checkInDate?.let { DateUtils.formatDate(it) } ?: "",
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Ngày check-in *") },
@@ -267,7 +260,7 @@ fun RoomsBookingScreen(
 
                         // Check-out date
                         OutlinedTextField(
-                            value = checkOutDate?.let { dateFormat.format(it) } ?: "",
+                            value = checkOutDate?.let { DateUtils.formatDate(it) } ?: "",
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Ngày check-out *") },
@@ -375,7 +368,7 @@ private fun RoomTypeFilter(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(DesignSystem.Spacing.listItemSpacing),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -456,7 +449,7 @@ private fun RoomBookingCard(
         elevation = CardDefaults.cardElevation(defaultElevation = if (enabled) 2.dp else 0.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Room icon

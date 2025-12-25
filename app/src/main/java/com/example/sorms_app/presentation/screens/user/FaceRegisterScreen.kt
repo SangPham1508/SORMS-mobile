@@ -1,5 +1,9 @@
 package com.example.sorms_app.presentation.screens.user
 
+import android.Manifest
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,12 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
 import com.example.sorms_app.presentation.viewmodel.FaceRegisterViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,6 +37,24 @@ fun FaceRegisterScreen(
     viewModel: FaceRegisterViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    
+    // Permission launcher for camera
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            // Permission granted, proceed to next step
+            viewModel.nextStep()
+        } else {
+            // Permission denied, show message
+            Toast.makeText(
+                context,
+                "Cần quyền camera để đăng ký nhận diện. Vui lòng cấp quyền trong Settings.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
 
     LaunchedEffect(uiState.registrationSuccess) {
         if (uiState.registrationSuccess) {
@@ -42,31 +66,16 @@ fun FaceRegisterScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Đăng ký nhận diện",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        SormsTopAppBar(
+            title = "Đăng ký nhận diện",
+            onNavigateBack = onNavigateBack
         )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(DesignSystem.Spacing.screenHorizontal),
+            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.lg)
         ) {
             // Progress Indicator
             val totalSteps = FaceRegisterStep.values().size
@@ -84,7 +93,7 @@ fun FaceRegisterScreen(
                 )
                 
                 FaceRegisterStep.CAMERA_PERMISSION -> CameraPermissionStep(
-                    onNext = { viewModel.nextStep() },
+                    onRequestPermission = { permissionLauncher.launch(Manifest.permission.CAMERA) },
                     onBack = { viewModel.previousStep() }
                 )
                 
@@ -231,7 +240,7 @@ private fun IntroductionStep(
 
 @Composable
 private fun CameraPermissionStep(
-    onNext: () -> Unit,
+    onRequestPermission: () -> Unit,
     onBack: () -> Unit
 ) {
     Column(
@@ -313,7 +322,7 @@ private fun CameraPermissionStep(
             }
 
             SormsButton(
-                onClick = onNext,
+                onClick = onRequestPermission,
                 text = "Cấp quyền",
                 variant = ButtonVariant.Primary,
                 modifier = Modifier.weight(1f)

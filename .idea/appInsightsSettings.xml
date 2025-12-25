@@ -10,10 +10,15 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.sorms_app" />
-                  <option name="mobileSdkAppId" value="1:279402674410:android:70f591d86213bdaeeebf93" />
-                  <option name="projectId" value="sorms-app" />
-                  <option name="projectNumber" value="279402674410" />
+                  <option name="mobileSdkAppId" value="1:284810550886:android:acb2dc6084e9167cfb17a7" />
+                  <option name="projectId" value="capstone-pronject-90955" />
+                  <option name="projectNumber" value="284810550886" />
                 </ConnectionSetting>
+              </option>
+              <option name="failureTypes">
+                <list>
+                  <option value="ANR" />
+                </list>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
               <option name="timeIntervalDays" value="THIRTY_DAYS" />

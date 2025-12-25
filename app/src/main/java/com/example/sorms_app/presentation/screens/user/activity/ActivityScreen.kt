@@ -17,7 +17,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,9 +28,10 @@ import com.example.sorms_app.domain.model.Notification
 import com.example.sorms_app.presentation.components.SormsCard
 import com.example.sorms_app.presentation.components.SormsEmptyState
 import com.example.sorms_app.presentation.components.SormsLoading
+import com.example.sorms_app.presentation.components.SormsTopAppBar
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
 import com.example.sorms_app.presentation.viewmodel.ActivityViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +40,7 @@ fun ActivityScreen(viewModel: ActivityViewModel = hiltViewModel()) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Lịch sử hoạt động") })
+            SormsTopAppBar(title = "Lịch sử hoạt động")
         }
     ) { innerPadding ->
         when {
@@ -72,8 +72,8 @@ fun ActivityScreen(viewModel: ActivityViewModel = hiltViewModel()) {
 private fun ActivityList(activities: List<Notification>, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),
+        verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
     ) {
         items(activities) { activity ->
             ActivityCard(activity = activity)
@@ -83,11 +83,9 @@ private fun ActivityList(activities: List<Notification>, modifier: Modifier = Mo
 
 @Composable
 private fun ActivityCard(activity: Notification) {
-    val dateFormatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-
     SormsCard {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -100,7 +98,7 @@ private fun ActivityCard(activity: Notification) {
                 Text(text = activity.message, style = MaterialTheme.typography.titleSmall)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = dateFormatter.format(activity.date),
+                    text = DateUtils.formatDateTime(activity.date),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

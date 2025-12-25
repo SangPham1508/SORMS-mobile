@@ -16,9 +16,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sorms_app.domain.model.Service
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.FormatUtils
 import com.example.sorms_app.presentation.viewmodel.CartViewModel
-import java.text.NumberFormat
-import java.util.*
 
 data class CartItem(
     val service: Service,
@@ -50,21 +50,9 @@ fun CartScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Giỏ hàng",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
+        SormsTopAppBar(
+            title = "Giỏ hàng",
+            onNavigateBack = onNavigateBack,
             actions = {
                 if (uiState.cartItems.isNotEmpty()) {
                     TextButton(
@@ -73,10 +61,7 @@ fun CartScreen(
                         Text("Xóa tất cả")
                     }
                 }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+            }
         )
 
         when {
@@ -109,7 +94,7 @@ fun CartScreen(
                 ) {
                     LazyColumn(
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(16.dp),
+                        contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(uiState.cartItems) { cartItem ->
@@ -137,7 +122,7 @@ fun CartScreen(
                         color = MaterialTheme.colorScheme.surface
                     ) {
                         Column(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             // Price Summary
@@ -151,7 +136,7 @@ fun CartScreen(
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
                                 Text(
-                                    text = formatCurrency(uiState.subtotal),
+                                    text = FormatUtils.formatCurrency(uiState.subtotal),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -186,7 +171,7 @@ fun CartScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = formatCurrency(uiState.total),
+                                    text = FormatUtils.formatCurrency(uiState.total),
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
@@ -259,7 +244,7 @@ private fun CartItemCard(
                         )
                         
                         Text(
-                            text = "${formatCurrency(cartItem.service.unitPrice)}/${cartItem.service.unitName}",
+                            text = "${FormatUtils.formatCurrency(cartItem.service.unitPrice)}/${cartItem.service.unitName}",
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
@@ -314,7 +299,7 @@ private fun CartItemCard(
                 
                 // Line Total
                 Text(
-                    text = formatCurrency(cartItem.service.unitPrice * cartItem.quantity),
+                    text = FormatUtils.formatCurrency(cartItem.service.unitPrice * cartItem.quantity),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -334,7 +319,3 @@ private fun CartItemCard(
     }
 }
 
-private fun formatCurrency(amount: Double): String {
-    val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
-    return formatter.format(amount)
-}

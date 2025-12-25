@@ -14,13 +14,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sorms_app.domain.model.ServiceOrder
 import com.example.sorms_app.domain.model.ServiceOrderStatus
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
+import com.example.sorms_app.presentation.utils.FormatUtils
+import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.StaffOrderViewModel
-import java.text.NumberFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,9 +32,10 @@ fun StaffOrdersScreen(
     modifier: Modifier = Modifier,
     viewModel: StaffOrderViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedFilter by remember { mutableStateOf("Tất cả") }
     
+    // Load data when screen is first composed
     LaunchedEffect(Unit) {
         viewModel.loadOrders()
     }
@@ -51,32 +54,21 @@ fun StaffOrdersScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Quản lý đơn hàng",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
+        SormsTopAppBar(
+            title = "Quản lý đơn hàng",
+            onNavigateBack = onNavigateBack,
             actions = {
-                IconButton(onClick = { viewModel.refresh() }) {
+                IconButton(
+                    onClick = {
+                        viewModel.refresh()
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Làm mới"
                     )
                 }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+            }
         )
 
         when {
@@ -104,6 +96,7 @@ fun StaffOrdersScreen(
             }
             
             else -> {
+                Box(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
@@ -136,6 +129,7 @@ fun StaffOrdersScreen(
                             onStartOrder = { viewModel.startOrder(order.id) },
                             onCompleteOrder = { viewModel.completeOrder(order.id) }
                         )
+                        }
                     }
                 }
             }
@@ -152,7 +146,7 @@ private fun FilterSection(
     
     SormsCard {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
         ) {
             Text(
                 text = "Lọc đơn hàng",
@@ -187,7 +181,7 @@ private fun OrderStatisticsCard(
 ) {
     SormsCard {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
         ) {
             Text(
                 text = "Thống kê đơn hàng",
@@ -304,15 +298,15 @@ private fun StaffOrderCard(
                     )
                     
                     Text(
-                        text = formatDate(order.createdDate ?: ""),
+                        text = DateUtils.formatDate(order.createdDate),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
                 
                 SormsBadge(
-                    text = getOrderStatusText(order.status),
-                    tone = getOrderStatusBadgeTone(order.status)
+                    text = StatusUtils.getServiceOrderStatusText(order.status.name),
+                    tone = StatusUtils.getServiceOrderStatusBadgeTone(order.status.name)
                 )
             }
             
@@ -333,7 +327,7 @@ private fun StaffOrderCard(
                 OrderDetailItem(
                     icon = Icons.Default.AttachMoney,
                     label = "Tổng tiền",
-                    value = formatCurrency(order.totalAmount),
+                    value = FormatUtils.formatCurrency(order.totalAmount),
                     modifier = Modifier.weight(1f)
                 )
                 
@@ -452,32 +446,4 @@ private fun OrderDetailItem(
     }
 }
 
-// Helper functions
-private fun getOrderStatusText(status: ServiceOrderStatus): String {
-    return status.displayName
-}
 
-private fun getOrderStatusBadgeTone(status: ServiceOrderStatus): BadgeTone {
-    return when (status) {
-        ServiceOrderStatus.COMPLETED -> BadgeTone.Success
-        ServiceOrderStatus.PENDING -> BadgeTone.Warning
-        ServiceOrderStatus.CONFIRMED, ServiceOrderStatus.IN_PROGRESS -> BadgeTone.Default
-        ServiceOrderStatus.CANCELLED -> BadgeTone.Error
-    }
-}
-
-private fun formatCurrency(amount: Double): String {
-    val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
-    return formatter.format(amount)
-}
-
-private fun formatDate(dateString: String): String {
-    if (dateString.isEmpty()) return ""
-    return try {
-        val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(dateString)
-        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        formatter.format(date ?: Date())
-    } catch (e: Exception) {
-        dateString
-    }
-}

@@ -17,9 +17,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sorms_app.domain.model.Booking
 import com.example.sorms_app.domain.model.Service
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.FormatUtils
 import com.example.sorms_app.presentation.viewmodel.ServiceViewModel
-import java.text.NumberFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,37 +51,22 @@ fun ServiceDetailScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Chi tiết dịch vụ",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        SormsTopAppBar(
+            title = "Chi tiết dịch vụ",
+            onNavigateBack = onNavigateBack
         )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(DesignSystem.Spacing.screenHorizontal),
+            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
         ) {
             // Service Info Card
             SormsCard {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -157,7 +142,7 @@ fun ServiceDetailScreen(
             // Pricing Card
             SormsCard {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
                 ) {
                     Text(
                         text = "Thông tin giá",
@@ -179,7 +164,7 @@ fun ServiceDetailScreen(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
                             Text(
-                                text = formatCurrency(service.unitPrice),
+                                text = FormatUtils.formatCurrency(service.unitPrice),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -198,7 +183,7 @@ fun ServiceDetailScreen(
             // Request Form
             SormsCard {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
@@ -304,7 +289,7 @@ fun ServiceDetailScreen(
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = formatCurrency(service.unitPrice * quantity),
+                                text = FormatUtils.formatCurrency(service.unitPrice * quantity),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -349,7 +334,7 @@ fun ServiceDetailScreen(
                     Text(
                         text = error,
                         color = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
                     )
                 }
             }
@@ -388,7 +373,3 @@ fun ServiceDetailScreen(
     }
 }
 
-private fun formatCurrency(amount: Double): String {
-    val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
-    return formatter.format(amount)
-}

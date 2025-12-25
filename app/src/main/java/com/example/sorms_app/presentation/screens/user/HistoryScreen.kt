@@ -14,11 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sorms_app.domain.model.Booking
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
+import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.HistoryViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,8 +30,9 @@ fun HistoryScreen(
     modifier: Modifier = Modifier,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Load data when screen is first composed
     LaunchedEffect(Unit) {
         viewModel.loadHistory()
     }
@@ -38,24 +41,9 @@ fun HistoryScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Lịch sử booking",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        SormsTopAppBar(
+            title = "Lịch sử booking",
+            onNavigateBack = onNavigateBack
         )
 
         when {
@@ -83,10 +71,11 @@ fun HistoryScreen(
             }
             
             else -> {
+                Box(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),
+                    verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.listItemSpacing)
                 ) {
                     // Filter Section
                     item {
@@ -111,6 +100,7 @@ fun HistoryScreen(
                             booking = booking,
                             onBookingClick = { onBookingSelected(booking) }
                         )
+                        }
                     }
                 }
             }
@@ -274,8 +264,8 @@ private fun HistoryBookingCard(
                 }
                 
                 SormsBadge(
-                    text = getBookingStatusText(booking.status),
-                    tone = getBookingStatusBadgeTone(booking.status)
+                    text = StatusUtils.getBookingStatusText(booking.status),
+                    tone = StatusUtils.getBookingStatusBadgeTone(booking.status)
                 )
             }
             
@@ -289,14 +279,14 @@ private fun HistoryBookingCard(
                 BookingDetailItem(
                     icon = Icons.Default.DateRange,
                     label = "Check-in",
-                    value = formatDate(booking.checkInDate?.toString()),
+                    value = DateUtils.formatDate(booking.checkInDate?.toString()),
                     modifier = Modifier.weight(1f)
                 )
                 
                 BookingDetailItem(
                     icon = Icons.Default.Schedule,
                     label = "Check-out", 
-                    value = formatDate(booking.checkOutDate?.toString()),
+                    value = DateUtils.formatDate(booking.checkOutDate?.toString()),
                     modifier = Modifier.weight(1f)
                 )
                 
@@ -369,36 +359,4 @@ private fun BookingDetailItem(
     }
 }
 
-// Helper functions
-private fun getBookingStatusText(status: String): String {
-    return when (status.uppercase()) {
-        "CONFIRMED" -> "Đã xác nhận"
-        "CHECKED_IN" -> "Đã check-in"
-        "CHECKED_OUT" -> "Đã check-out"
-        "COMPLETED" -> "Hoàn thành"
-        "CANCELLED" -> "Đã hủy"
-        "PENDING" -> "Chờ xử lý"
-        else -> status
-    }
-}
 
-private fun getBookingStatusBadgeTone(status: String): BadgeTone {
-    return when (status.uppercase()) {
-        "COMPLETED" -> BadgeTone.Success
-        "CONFIRMED", "CHECKED_IN" -> BadgeTone.Default
-        "CANCELLED" -> BadgeTone.Error
-        "PENDING" -> BadgeTone.Warning
-        else -> BadgeTone.Default
-    }
-}
-
-private fun formatDate(dateString: String?): String {
-    if (dateString.isNullOrEmpty()) return "N/A"
-    return try {
-        val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(dateString)
-        val formatter = SimpleDateFormat("dd/MM", Locale.getDefault())
-        formatter.format(date ?: Date())
-    } catch (e: Exception) {
-        dateString
-    }
-}

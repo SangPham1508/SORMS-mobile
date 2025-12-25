@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
 import com.example.sorms_app.presentation.viewmodel.FaceManagementViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,24 +41,9 @@ fun FaceManagementScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Quản lý nhận diện",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        SormsTopAppBar(
+            title = "Quản lý nhận diện",
+            onNavigateBack = onNavigateBack
         )
 
         when {
@@ -256,13 +241,13 @@ private fun FaceDataManagement(
                 InfoRow(
                     icon = Icons.Default.DateRange,
                     label = "Ngày đăng ký",
-                    value = formatDate(uiState.registrationDate)
+                    value = DateUtils.formatDate(uiState.registrationDate)
                 )
 
                 InfoRow(
                     icon = Icons.Default.Update,
                     label = "Cập nhật lần cuối",
-                    value = formatDate(uiState.lastUpdateDate)
+                    value = DateUtils.formatDate(uiState.lastUpdateDate)
                 )
 
                 InfoRow(
@@ -503,16 +488,6 @@ private fun FeatureItem(
     }
 }
 
-private fun formatDate(dateString: String?): String {
-    if (dateString.isNullOrEmpty()) return "N/A"
-    return try {
-        val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(dateString)
-        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        formatter.format(date ?: Date())
-    } catch (e: Exception) {
-        dateString
-    }
-}
 
 // Data class for UI state
 data class FaceManagementUiState(

@@ -2,17 +2,17 @@ package com.example.sorms_app.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary Colors - Blue theme matching web
-val Blue50 = Color(0xFFEFF6FF)
-val Blue100 = Color(0xFFDBEAFE)
-val Blue200 = Color(0xFFBFDBFE)
-val Blue300 = Color(0xFF93C5FD)
-val Blue400 = Color(0xFF60A5FA)
-val Blue500 = Color(0xFF3B82F6)
-val Blue600 = Color(0xFF2563EB)
-val Blue700 = Color(0xFF1D4ED8)
-val Blue800 = Color(0xFF1E40AF)
-val Blue900 = Color(0xFF1E3A8A)
+// Primary Colors - Blue theme matching web (hsl(200 98% 35%) = #0085B8)
+val Blue50 = Color(0xFFE6F1FF)  // Lighter background
+val Blue100 = Color(0xFFD6E4FF)  // Header gradient background
+val Blue200 = Color(0xFFB3D1FF)
+val Blue300 = Color(0xFF80B3FF)
+val Blue400 = Color(0xFF4D95FF)
+val Blue500 = Color(0xFF1A77FF)
+val Blue600 = Color(0xFF0085B8)  // Primary color matching web (hsl(200 98% 35%))
+val Blue700 = Color(0xFF006A94)
+val Blue800 = Color(0xFF005070)
+val Blue900 = Color(0xFF00364C)
 
 // Secondary Colors - Gray
 val Gray50 = Color(0xFFF9FAFB)

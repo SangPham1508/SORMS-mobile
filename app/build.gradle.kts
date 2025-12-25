@@ -39,14 +39,12 @@ android {
         create("dev") {
             dimension = "env"
             buildConfigField("String", "API_BASE_URL", "\"http://103.81.87.99:5656/api/\"")
-            // Web client ID từ project capstone-pronject (dùng cho cả Android)
-            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"284260188230-61kromthtekhru3cmv3uj05nfa3c5g8p.apps.googleusercontent.com\"")
+            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"284810550886-hbvn2fvvjdv392iu2hqc6jvtgdovaqmt.apps.googleusercontent.com\"")
         }
         create("prod") {
             dimension = "env"
             buildConfigField("String", "API_BASE_URL", "\"https://backend.sorms.online/api/\"")
-            // Web client ID từ project capstone-pronject
-            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"284260188230-61kromthtekhru3cmv3uj05nfa3c5g8p.apps.googleusercontent.com\"")
+            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"284810550886-hbvn2fvvjdv392iu2hqc6jvtgdovaqmt.apps.googleusercontent.com\"")
         }
     }
     compileOptions {
@@ -89,6 +87,9 @@ dependencies {
     
     // ViewModel - sử dụng cùng version với lifecycle-runtime-ktx
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
+    
+    // Lifecycle Runtime Compose for lifecycle-aware state collection
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.0")
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")

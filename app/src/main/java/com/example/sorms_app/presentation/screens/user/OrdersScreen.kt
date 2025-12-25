@@ -16,13 +16,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sorms_app.domain.model.ServiceOrder
 import com.example.sorms_app.domain.model.ServiceOrderStatus
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
+import com.example.sorms_app.presentation.utils.FormatUtils
+import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.OrderViewModel
-import java.text.NumberFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,9 +34,10 @@ fun OrdersScreen(
     modifier: Modifier = Modifier,
     viewModel: OrderViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedFilter by remember { mutableStateOf("Tất cả") }
     
+    // Load data when screen is first composed
     LaunchedEffect(Unit) {
         viewModel.loadOrders()
     }
@@ -55,24 +58,9 @@ fun OrdersScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Đơn hàng của tôi",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        SormsTopAppBar(
+            title = "Đơn hàng của tôi",
+            onNavigateBack = onNavigateBack
         )
 
         // Content
@@ -101,6 +89,7 @@ fun OrdersScreen(
             }
             
             else -> {
+                Box(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
@@ -122,6 +111,7 @@ fun OrdersScreen(
                             onCancelOrder = { viewModel.cancelOrder(order.id) },
                             onPayOrder = { viewModel.payOrder(order.id) }
                         )
+                        }
                     }
                 }
             }
@@ -194,15 +184,15 @@ private fun OrderCard(
                     )
                     
                     Text(
-                        text = formatDate(order.createdDate ?: ""),
+                        text = DateUtils.formatDate(order.createdDate),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
                 
                 SormsBadge(
-                    text = getOrderStatusText(order.status),
-                    tone = getOrderStatusBadgeTone(order.status)
+                    text = StatusUtils.getServiceOrderStatusText(order.status.name),
+                    tone = StatusUtils.getServiceOrderStatusBadgeTone(order.status.name)
                 )
             }
             
@@ -223,7 +213,7 @@ private fun OrderCard(
                 OrderDetailItem(
                     icon = Icons.Default.AttachMoney,
                     label = "Tổng tiền",
-                    value = formatCurrency(order.totalAmount),
+                    value = FormatUtils.formatCurrency(order.totalAmount),
                     modifier = Modifier.weight(1f)
                 )
                 
@@ -328,33 +318,4 @@ private fun OrderDetailItem(
     }
 }
 
-// Helper functions
-private fun getOrderStatusText(status: ServiceOrderStatus): String {
-    return status.displayName
-}
 
-private fun getOrderStatusBadgeTone(status: ServiceOrderStatus): BadgeTone {
-    return when (status) {
-        ServiceOrderStatus.COMPLETED -> BadgeTone.Success
-        ServiceOrderStatus.PENDING -> BadgeTone.Warning
-        ServiceOrderStatus.CONFIRMED, ServiceOrderStatus.IN_PROGRESS -> BadgeTone.Default
-        ServiceOrderStatus.CANCELLED -> BadgeTone.Error
-    }
-}
-
-private fun formatCurrency(amount: Double): String {
-    val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
-    return formatter.format(amount)
-}
-
-private fun formatDate(dateString: String): String {
-    if (dateString.isEmpty()) return ""
-    return try {
-        // Assuming ISO format, adjust as needed
-        val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(dateString)
-        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        formatter.format(date ?: Date())
-    } catch (e: Exception) {
-        dateString
-    }
-}

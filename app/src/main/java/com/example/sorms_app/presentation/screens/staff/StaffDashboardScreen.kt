@@ -16,13 +16,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sorms_app.domain.model.Task
 import com.example.sorms_app.domain.model.Priority
 import com.example.sorms_app.domain.model.Status
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
+import com.example.sorms_app.presentation.utils.PriorityUtils
+import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.TaskViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
 data class StaffDashboardUiState(
     val isLoading: Boolean = false,
@@ -44,27 +47,32 @@ fun StaffDashboardScreen(
     modifier: Modifier = Modifier,
     viewModel: TaskViewModel = hiltViewModel()
 ) {
-    // Mock UI state for now
+    // Use ViewModel state
+    val taskUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    
+    // Mock UI state for now (will be replaced with real data from ViewModel)
     val uiState = remember {
         StaffDashboardUiState(
             staffName = "Nguyễn Văn B",
-            totalTasks = 10,
-            pendingTasks = 3,
-            inProgressTasks = 4,
-            completedTasks = 3,
-            recentTasks = emptyList()
+            totalTasks = taskUiState.tasks.size,
+            pendingTasks = taskUiState.tasks.count { it.status.name == "PENDING" },
+            inProgressTasks = taskUiState.tasks.count { it.status.name == "IN_PROGRESS" },
+            completedTasks = taskUiState.tasks.count { it.status.name == "COMPLETED" },
+            recentTasks = taskUiState.tasks.take(5)
         )
     }
     
+    // Load data when screen is first composed
     LaunchedEffect(Unit) {
-        // viewModel.loadTasks() - Will be implemented later
+        viewModel.loadTasks()
     }
 
+    Box(modifier = modifier.fillMaxSize()) {
     LazyColumn(
-        modifier = modifier
+            modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(DesignSystem.Spacing.screenHorizontal),
+        verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
     ) {
         // Welcome Section
         item {
@@ -137,6 +145,7 @@ fun StaffDashboardScreen(
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
+                }
                 }
             }
         }
@@ -338,15 +347,15 @@ private fun TaskCard(
                     horizontalAlignment = Alignment.End
                 ) {
                     SormsBadge(
-                        text = getTaskStatusText(task.status),
-                        tone = getTaskStatusBadgeTone(task.status)
+                        text = StatusUtils.getTaskStatusText(task.status.name),
+                        tone = StatusUtils.getTaskStatusBadgeTone(task.status.name)
                     )
                     
                     Spacer(modifier = Modifier.height(4.dp))
                     
                     SormsBadge(
-                        text = getTaskPriorityText(task.priority),
-                        tone = getTaskPriorityBadgeTone(task.priority)
+                        text = PriorityUtils.getPriorityText(task.priority),
+                        tone = PriorityUtils.getPriorityBadgeTone(task.priority)
                     )
                 }
             }
@@ -380,7 +389,7 @@ private fun TaskCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     
                     Text(
-                        text = "Hạn: ${formatDate(dueDate)}",
+                        text = "Hạn: ${DateUtils.formatDate(dueDate)}",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -430,44 +439,5 @@ private fun TaskCard(
     }
 }
 
-// Helper functions
-private fun getTaskStatusText(status: Status): String {
-    return when (status) {
-        Status.PENDING -> "Chờ xử lý"
-        Status.IN_PROGRESS -> "Đang thực hiện"
-        Status.COMPLETED -> "Hoàn thành"
-        Status.REJECTED -> "Đã hủy"
-    }
-}
 
-private fun getTaskStatusBadgeTone(status: Status): BadgeTone {
-    return when (status) {
-        Status.COMPLETED -> BadgeTone.Success
-        Status.PENDING -> BadgeTone.Warning
-        Status.IN_PROGRESS -> BadgeTone.Default
-        Status.REJECTED -> BadgeTone.Error
-    }
-}
 
-private fun getTaskPriorityText(priority: Priority?): String {
-    return when (priority) {
-        Priority.LOW -> "Thấp"
-        Priority.MEDIUM -> "Trung bình"
-        Priority.HIGH -> "Cao"
-        null -> "Bình thường"
-    }
-}
-
-private fun getTaskPriorityBadgeTone(priority: Priority?): BadgeTone {
-    return when (priority) {
-        Priority.LOW -> BadgeTone.Default
-        Priority.MEDIUM -> BadgeTone.Warning
-        Priority.HIGH -> BadgeTone.Error
-        null -> BadgeTone.Default
-    }
-}
-
-private fun formatDate(date: Date): String {
-    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    return formatter.format(date)
-}

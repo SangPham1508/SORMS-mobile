@@ -3,7 +3,6 @@ package com.example.sorms_app.presentation.screens.user
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -15,11 +14,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sorms_app.data.models.RoomData
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.RoomViewModel
-import java.text.NumberFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,8 +29,9 @@ fun RoomsScreen(
     modifier: Modifier = Modifier,
     viewModel: RoomViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
+    // Load data when screen is first composed
     LaunchedEffect(Unit) {
         viewModel.loadRooms()
     }
@@ -39,24 +40,9 @@ fun RoomsScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Đặt phòng",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        SormsTopAppBar(
+            title = "Đặt phòng",
+            onNavigateBack = onNavigateBack
         )
 
         // Content
@@ -85,10 +71,11 @@ fun RoomsScreen(
             }
             
             else -> {
+                Box(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),
+                    verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.listItemSpacing)
                 ) {
                     // Filter Section
                     item {
@@ -104,6 +91,7 @@ fun RoomsScreen(
                             room = room,
                             onRoomClick = { onRoomSelected(room) }
                         )
+                        }
                     }
                 }
             }
@@ -120,7 +108,7 @@ private fun FilterSection(
     
     SormsCard {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
         ) {
             Text(
                 text = "Lọc phòng",
@@ -182,8 +170,8 @@ private fun RoomCard(
                 }
                 
                 SormsBadge(
-                    text = getRoomStatusText(room.status ?: "UNKNOWN"),
-                    tone = getRoomStatusBadgeTone(room.status ?: "UNKNOWN")
+                    text = StatusUtils.getRoomStatusText(room.status ?: "UNKNOWN"),
+                    tone = StatusUtils.getRoomStatusBadgeTone(room.status ?: "UNKNOWN")
                 )
             }
             
@@ -278,29 +266,3 @@ private fun RoomDetailItem(
     }
 }
 
-// Helper functions
-private fun getRoomStatusText(status: String): String {
-    return when (status.uppercase()) {
-        "AVAILABLE" -> "Khả dụng"
-        "OCCUPIED" -> "Đang ở"
-        "MAINTENANCE" -> "Bảo trì"
-        "CLEANING" -> "Dọn dẹp"
-        "OUT_OF_SERVICE" -> "Ngừng hoạt động"
-        else -> status
-    }
-}
-
-private fun getRoomStatusBadgeTone(status: String): BadgeTone {
-    return when (status.uppercase()) {
-        "AVAILABLE" -> BadgeTone.Success
-        "OCCUPIED" -> BadgeTone.Error
-        "MAINTENANCE", "CLEANING" -> BadgeTone.Warning
-        "OUT_OF_SERVICE" -> BadgeTone.Error
-        else -> BadgeTone.Default
-    }
-}
-
-private fun formatCurrency(amount: Double): String {
-    val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
-    return formatter.format(amount)
-}

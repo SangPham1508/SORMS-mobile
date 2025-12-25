@@ -41,9 +41,9 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Blue600,
+    primary = Blue600,  // #0085B8 - matches web hsl(200 98% 35%)
     onPrimary = Color.White,
-    primaryContainer = Blue100,
+    primaryContainer = Blue100,  // Light blue background for containers
     onPrimaryContainer = Blue900,
     secondary = Gray600,
     onSecondary = Color.White,
@@ -55,9 +55,9 @@ private val LightColorScheme = lightColorScheme(
     onBackground = Gray900,
     surface = Color.White,
     onSurface = Gray900,
-    surfaceVariant = Gray50,
+    surfaceVariant = Gray50,  // Light gray for card backgrounds
     onSurfaceVariant = Gray700,
-    outline = Gray300,
+    outline = Gray200,  // Border color matching web (border-gray-200)
     error = Red500,
     onError = Color.White,
     errorContainer = Red100,

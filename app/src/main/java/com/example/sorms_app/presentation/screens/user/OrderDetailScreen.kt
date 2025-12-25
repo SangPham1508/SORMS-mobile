@@ -3,7 +3,6 @@ package com.example.sorms_app.presentation.screens.user
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -18,10 +17,11 @@ import com.example.sorms_app.domain.model.PaymentMethod
 import com.example.sorms_app.domain.model.ServiceOrder
 import com.example.sorms_app.domain.model.ServiceOrderStatus
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
+import com.example.sorms_app.presentation.utils.FormatUtils
+import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.OrderViewModel
-import java.text.NumberFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,24 +55,9 @@ fun OrderDetailScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Chi tiết đơn hàng",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        SormsTopAppBar(
+            title = "Chi tiết đơn hàng",
+            onNavigateBack = onNavigateBack
         )
 
         if (order == null) {
@@ -99,7 +84,7 @@ fun OrderDetailScreen(
                 item {
                     SormsCard {
                         Column(
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -117,14 +102,14 @@ fun OrderDetailScreen(
                                     )
                                     
                                     Text(
-                                        text = "Tạo lúc: ${formatDate(order.createdDate ?: "")}",
+                                        text = "Tạo lúc: ${DateUtils.formatDateTime(order.createdDate)}",
                                         fontSize = 14.sp,
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                     )
                                     
                                     order.lastModifiedDate?.let { lastModified ->
                                         Text(
-                                            text = "Cập nhật: ${formatDate(lastModified)}",
+                                            text = "Cập nhật: ${DateUtils.formatDateTime(lastModified)}",
                                             fontSize = 14.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                         )
@@ -132,8 +117,8 @@ fun OrderDetailScreen(
                                 }
                                 
                                 SormsBadge(
-                                    text = getOrderStatusText(order.status),
-                                    tone = getOrderStatusBadgeTone(order.status)
+                                    text = StatusUtils.getServiceOrderStatusText(order.status.name),
+                                    tone = StatusUtils.getServiceOrderStatusBadgeTone(order.status.name)
                                 )
                             }
                             
@@ -153,7 +138,7 @@ fun OrderDetailScreen(
                 item {
                     SormsCard {
                         Column(
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
                         ) {
                             Text(
                                 text = "Dịch vụ đã đặt",
@@ -197,14 +182,14 @@ fun OrderDetailScreen(
                                 )
                                 
                                 Text(
-                                    text = "Đơn giá: ${formatCurrency(item.unitPrice)}",
+                                    text = "Đơn giá: ${FormatUtils.formatCurrency(item.unitPrice)}",
                                     fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
                             }
                             
                             Text(
-                                text = formatCurrency(item.lineTotal),
+                                text = FormatUtils.formatCurrency(item.lineTotal),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.primary
@@ -217,7 +202,7 @@ fun OrderDetailScreen(
                 item {
                     SormsCard {
                         Column(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
@@ -231,7 +216,7 @@ fun OrderDetailScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text("Tạm tính")
-                                Text(formatCurrency(order.subtotalAmount))
+                                Text(FormatUtils.formatCurrency(order.subtotalAmount))
                             }
                             
                             if (order.discountAmount > 0) {
@@ -241,7 +226,7 @@ fun OrderDetailScreen(
                                 ) {
                                     Text("Giảm giá")
                                     Text(
-                                        text = "-${formatCurrency(order.discountAmount)}",
+                                        text = "-${FormatUtils.formatCurrency(order.discountAmount)}",
                                         color = MaterialTheme.colorScheme.error
                                     )
                                 }
@@ -259,7 +244,7 @@ fun OrderDetailScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = formatCurrency(order.totalAmount),
+                                    text = FormatUtils.formatCurrency(order.totalAmount),
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
@@ -314,7 +299,7 @@ fun OrderDetailScreen(
                             Text(
                                 text = "Lỗi thanh toán: $error",
                                 color = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.padding(16.dp)
+                                modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
                             )
                         }
                     }
@@ -331,7 +316,7 @@ fun OrderDetailScreen(
                             Text(
                                 text = "Lỗi hủy đơn: $error",
                                 color = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.padding(16.dp)
+                                modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
                             )
                         }
                     }
@@ -408,32 +393,4 @@ fun OrderDetailScreen(
     }
 }
 
-// Helper functions
-private fun getOrderStatusText(status: ServiceOrderStatus): String {
-    return status.displayName
-}
 
-private fun getOrderStatusBadgeTone(status: ServiceOrderStatus): BadgeTone {
-    return when (status) {
-        ServiceOrderStatus.COMPLETED -> BadgeTone.Success
-        ServiceOrderStatus.PENDING -> BadgeTone.Warning
-        ServiceOrderStatus.CONFIRMED, ServiceOrderStatus.IN_PROGRESS -> BadgeTone.Default
-        ServiceOrderStatus.CANCELLED -> BadgeTone.Error
-    }
-}
-
-private fun formatCurrency(amount: Double): String {
-    val formatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
-    return formatter.format(amount)
-}
-
-private fun formatDate(dateString: String): String {
-    if (dateString.isEmpty()) return ""
-    return try {
-        val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(dateString)
-        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        formatter.format(date ?: Date())
-    } catch (e: Exception) {
-        dateString
-    }
-}

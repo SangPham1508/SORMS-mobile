@@ -16,10 +16,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sorms_app.data.models.RoomData
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
 import com.example.sorms_app.presentation.viewmodel.BookingViewModel
-import java.text.NumberFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,37 +45,22 @@ fun BookingDetailScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Đặt phòng",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        SormsTopAppBar(
+            title = "Đặt phòng",
+            onNavigateBack = onNavigateBack
         )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(DesignSystem.Spacing.screenHorizontal),
+            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
         ) {
             // Room Info Card
             SormsCard {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
                 ) {
                     Text(
                         text = room.name ?: room.code ?: "Phòng #${room.id}",
@@ -115,7 +98,7 @@ fun BookingDetailScreen(
             // Booking Form
             SormsCard {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
@@ -222,7 +205,7 @@ fun BookingDetailScreen(
             // Pricing Summary
             SormsCard {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
@@ -280,7 +263,7 @@ fun BookingDetailScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.Top
                         ) {
@@ -357,7 +340,7 @@ fun BookingDetailScreen(
                     Text(
                         text = error,
                         color = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
                     )
                 }
             }

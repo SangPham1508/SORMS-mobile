@@ -16,14 +16,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sorms_app.domain.model.Booking
+import com.example.sorms_app.presentation.utils.DateUtils
+import java.util.Calendar
+import java.util.Date
 import com.example.sorms_app.presentation.components.BadgeTone
 import com.example.sorms_app.presentation.components.SormsBadge
 import com.example.sorms_app.presentation.components.SormsCard
 import com.example.sorms_app.presentation.components.SormsEmptyState
 import com.example.sorms_app.presentation.components.SormsLoading
+import com.example.sorms_app.presentation.components.SormsTopAppBar
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.BookingViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,17 +58,8 @@ fun BookingsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { 
-                    Column {
-                        Text("Lịch sử đặt phòng")
-                        Text(
-                            text = "Quản lý các lần đặt phòng của bạn",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
+            SormsTopAppBar(
+                title = "Lịch sử đặt phòng",
                 actions = {
                     IconButton(onClick = { viewModel.loadAllBookings() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Làm mới")
@@ -119,13 +114,17 @@ fun BookingsScreen(
                     selectedBooking = null
                 },
                 onConfirm = { checkIn, checkOut, numGuests, note ->
+                    checkIn?.let { checkInDate ->
+                        checkOut?.let { checkOutDate ->
                     viewModel.updateBooking(
                         bookingId = selectedBooking!!.id,
-                        checkInDate = checkIn,
-                        checkOutDate = checkOut,
+                                checkInDate = checkInDate,
+                                checkOutDate = checkOutDate,
                         numGuests = numGuests,
                         note = note
                     )
+                        }
+                    }
                     showEditDialog = false
                     selectedBooking = null
                 }
@@ -176,43 +175,52 @@ fun BookingsScreen(
 private fun EditBookingDialog(
     booking: Booking,
     onDismiss: () -> Unit,
-    onConfirm: (Date, Date, Int, String?) -> Unit
+                onConfirm: (Date?, Date?, Int, String?) -> Unit
 ) {
     val context = LocalContext.current
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
     
-    var checkInDate by remember { mutableStateOf(booking.checkInDate) }
-    var checkOutDate by remember { mutableStateOf(booking.checkOutDate) }
+    var checkInDate by remember { mutableStateOf<Date?>(booking.checkInDate) }
+    var checkOutDate by remember { mutableStateOf<Date?>(booking.checkOutDate) }
     var numGuests by remember { mutableStateOf(booking.numGuests) }
     var note by remember { mutableStateOf(booking.note ?: "") }
+
+    val checkInCalendar = Calendar.getInstance()
+    booking.checkInDate?.let { checkInCalendar.time = it }
 
     val checkInPicker = remember {
         DatePickerDialog(
             context,
             { _, year, month, day ->
                 val cal = Calendar.getInstance()
-                cal.set(year, month, day)
+                cal.set(Calendar.YEAR, year)
+                cal.set(Calendar.MONTH, month)
+                cal.set(Calendar.DAY_OF_MONTH, day)
                 checkInDate = cal.time
             },
-            Calendar.getInstance().get(Calendar.YEAR),
-            Calendar.getInstance().get(Calendar.MONTH),
-            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+            checkInCalendar.get(Calendar.YEAR),
+            checkInCalendar.get(Calendar.MONTH),
+            checkInCalendar.get(Calendar.DAY_OF_MONTH)
         ).apply {
             datePicker.minDate = System.currentTimeMillis() - 1000
         }
     }
+
+    val checkOutCalendar = Calendar.getInstance()
+    booking.checkOutDate?.let { checkOutCalendar.time = it }
 
     val checkOutPicker = remember {
         DatePickerDialog(
             context,
             { _, year, month, day ->
                 val cal = Calendar.getInstance()
-                cal.set(year, month, day)
+                cal.set(Calendar.YEAR, year)
+                cal.set(Calendar.MONTH, month)
+                cal.set(Calendar.DAY_OF_MONTH, day)
                 checkOutDate = cal.time
             },
-            Calendar.getInstance().get(Calendar.YEAR),
-            Calendar.getInstance().get(Calendar.MONTH),
-            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+            checkOutCalendar.get(Calendar.YEAR),
+            checkOutCalendar.get(Calendar.MONTH),
+            checkOutCalendar.get(Calendar.DAY_OF_MONTH)
         ).apply {
             datePicker.minDate = System.currentTimeMillis() - 1000
         }
@@ -238,7 +246,7 @@ private fun EditBookingDialog(
 
                 // Check-in date
                 OutlinedTextField(
-                    value = dateFormat.format(checkInDate),
+                    value = checkInDate?.let { DateUtils.formatDate(it) } ?: "",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Ngày check-in") },
@@ -252,7 +260,7 @@ private fun EditBookingDialog(
 
                 // Check-out date
                 OutlinedTextField(
-                    value = dateFormat.format(checkOutDate),
+                    value = checkOutDate?.let { DateUtils.formatDate(it) } ?: "",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Ngày check-out") },
@@ -300,11 +308,13 @@ private fun EditBookingDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    if (checkOutDate <= checkInDate) {
+                    val checkIn = checkInDate
+                    val checkOut = checkOutDate
+                    if (checkOut != null && checkIn != null && checkOut <= checkIn) {
                         Toast.makeText(context, "Ngày check-out phải sau check-in", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
-                    onConfirm(checkInDate, checkOutDate, numGuests, note.takeIf { it.isNotBlank() })
+                    onConfirm(checkIn, checkOut, numGuests, note.takeIf { it.isNotBlank() })
                 }
             ) {
                 Text("Lưu thay đổi")
@@ -328,7 +338,7 @@ private fun BookingList(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(bookings) { booking ->
@@ -349,14 +359,13 @@ private fun BookingCard(
     onCancelClick: () -> Unit,
     onViewOrderClick: () -> Unit
 ) {
-    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
     val statusUpper = booking.status.uppercase()
     val canEdit = statusUpper == "PENDING"
     val canCancel = statusUpper == "PENDING"
     val hasOrder = statusUpper in listOf("APPROVED", "CHECKED_IN", "CHECKED_OUT")
 
     SormsCard {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)) {
             // Header: Code + Status
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween, 
@@ -377,8 +386,8 @@ private fun BookingCard(
                     )
                 }
                 SormsBadge(
-                    text = getStatusText(booking.status),
-                    tone = getStatusBadgeTone(booking.status)
+                    text = StatusUtils.getBookingStatusText(booking.status),
+                    tone = StatusUtils.getBookingStatusBadgeTone(booking.status)
                 )
             }
             
@@ -438,7 +447,7 @@ private fun BookingCard(
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            text = dateFormatter.format(booking.checkInDate),
+                            text = booking.checkInDate?.let { DateUtils.formatDate(it) } ?: "N/A",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -458,7 +467,7 @@ private fun BookingCard(
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            text = dateFormatter.format(booking.checkOutDate),
+                            text = booking.checkOutDate?.let { DateUtils.formatDate(it) } ?: "N/A",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -484,7 +493,7 @@ private fun BookingCard(
                     )
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.padding(DesignSystem.Spacing.listItemSpacing),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
@@ -564,25 +573,3 @@ private fun BookingCard(
     }
 }
 
-private fun getStatusBadgeTone(status: String): BadgeTone {
-    return when (status.uppercase()) {
-        "CHECKED_IN" -> BadgeTone.Success
-        "APPROVED" -> BadgeTone.Default
-        "PENDING" -> BadgeTone.Warning
-        "CHECKED_OUT" -> BadgeTone.Default
-        "CANCELLED", "REJECTED" -> BadgeTone.Error
-        else -> BadgeTone.Default
-    }
-}
-
-private fun getStatusText(status: String): String {
-    return when (status.uppercase()) {
-        "PENDING" -> "Chờ duyệt"
-        "APPROVED" -> "Đã duyệt"
-        "CHECKED_IN" -> "Đã check-in"
-        "CHECKED_OUT" -> "Đã check-out"
-        "CANCELLED" -> "Đã hủy"
-        "REJECTED" -> "Từ chối"
-        else -> status
-    }
-}

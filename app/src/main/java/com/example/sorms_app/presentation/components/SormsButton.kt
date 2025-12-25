@@ -48,8 +48,8 @@ fun SormsButton(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         enabled = enabled,
-        shape = RoundedCornerShape(50), // 50% rounded corners
-        contentPadding = PaddingValues(vertical = 14.dp),
+        shape = RoundedCornerShape(8.dp),  // rounded-md (8dp) matching web
+        contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
         colors = colors
     ) {
         Text(text = text, style = MaterialTheme.typography.labelLarge)

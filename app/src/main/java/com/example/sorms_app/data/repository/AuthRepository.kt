@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.sorms_app.data.datasource.local.AuthSession
 import com.example.sorms_app.data.datasource.local.TokenManager
 import com.example.sorms_app.data.datasource.remote.MobileOutboundAuthenticateRequest
+import com.example.sorms_app.data.datasource.remote.RefreshTokenRequest
 import com.example.sorms_app.data.datasource.remote.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -63,12 +64,13 @@ class AuthRepository(private val context: Context) {
             if (response.isSuccessful) {
                 val body = response.body()?.data
                 val token = body?.token
+                val refreshToken = body?.refreshToken
                 val accountInfo = body?.accountInfo
-                val roles = accountInfo?.roleName ?: emptyList()
+                val roles = accountInfo?.roles ?: emptyList()
 
                 if (!token.isNullOrBlank() && accountInfo != null) {
-                    // Persist token to DataStore
-                    tokenManager.saveTokens(token)
+                    // Persist both access token and refresh token to DataStore
+                    tokenManager.saveTokens(token, refreshToken)
 
                     // Keep user info in-memory for fast access
                     AuthSession.currentToken = token
@@ -86,6 +88,49 @@ class AuthRepository(private val context: Context) {
             }
         } catch (e: Exception) {
             return@withContext AuthResult.Error(e.localizedMessage ?: "Lỗi không xác định")
+        }
+    }
+
+    /**
+     * Refresh access token using refresh token
+     */
+    suspend fun refreshToken(): AuthResult = withContext(Dispatchers.IO) {
+        try {
+            val savedRefreshToken = tokenManager.refreshTokenFlow.first()
+            
+            if (savedRefreshToken.isNullOrBlank()) {
+                return@withContext AuthResult.Error("Không có refresh token")
+            }
+
+            val response = api.refresh(RefreshTokenRequest(refreshToken = savedRefreshToken))
+            
+            if (response.isSuccessful) {
+                val body = response.body()?.data
+                val newToken = body?.token
+                val newRefreshToken = body?.refreshToken
+                val accountInfo = body?.accountInfo
+                val roles = accountInfo?.roles ?: emptyList()
+
+                if (!newToken.isNullOrBlank() && accountInfo != null) {
+                    // Persist new tokens to DataStore
+                    tokenManager.saveTokens(newToken, newRefreshToken)
+
+                    // Update in-memory session
+                    AuthSession.currentToken = newToken
+                    AuthSession.accountId = accountInfo.id
+                    AuthSession.userName = "${accountInfo.firstName ?: ""} ${accountInfo.lastName ?: ""}".trim()
+                    AuthSession.userEmail = accountInfo.email
+                    AuthSession.avatarUrl = accountInfo.avatarUrl
+                    AuthSession.roles = roles
+                    
+                    return@withContext AuthResult.Success(roles)
+                }
+                return@withContext AuthResult.Error("Token mới hoặc thông tin người dùng trống từ backend")
+            } else {
+                return@withContext AuthResult.Error("Refresh token thất bại: ${response.code()} - ${response.message()}")
+            }
+        } catch (e: Exception) {
+            return@withContext AuthResult.Error(e.localizedMessage ?: "Lỗi không xác định khi refresh token")
         }
     }
 

@@ -16,7 +16,6 @@ import com.example.sorms_app.data.repository.NotificationRepositoryImpl
 import com.example.sorms_app.data.repository.OrderRepositoryImpl
 import com.example.sorms_app.data.repository.RoomRepository
 import com.example.sorms_app.data.repository.RoomTypeRepository
-import com.example.sorms_app.data.repository.ScheduleRepositoryImpl
 import com.example.sorms_app.data.repository.ServiceRepositoryImpl
 import com.example.sorms_app.data.repository.TaskRepositoryImpl
 import com.example.sorms_app.data.repository.UserRepositoryImpl
@@ -24,7 +23,6 @@ import com.example.sorms_app.domain.repository.ActivityRepository
 import com.example.sorms_app.domain.repository.BookingRepository
 import com.example.sorms_app.domain.repository.NotificationRepository
 import com.example.sorms_app.domain.repository.OrderRepository
-import com.example.sorms_app.domain.repository.ScheduleRepository
 import com.example.sorms_app.domain.repository.ServiceRepository
 import com.example.sorms_app.domain.repository.TaskRepository
 import com.example.sorms_app.domain.repository.UserRepository
@@ -63,10 +61,6 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindActivityRepository(activityRepositoryImpl: ActivityRepositoryImpl): ActivityRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindScheduleRepository(scheduleRepositoryImpl: ScheduleRepositoryImpl): ScheduleRepository
 
     @Binds
     @Singleton

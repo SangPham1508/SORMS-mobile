@@ -15,9 +15,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sorms_app.domain.model.Status
 import com.example.sorms_app.domain.model.Task
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
 import com.example.sorms_app.presentation.viewmodel.TaskViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,13 +34,9 @@ fun TaskDetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Chi tiết công việc") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
+            SormsTopAppBar(
+                title = "Chi tiết công việc",
+                onNavigateBack = onNavigateBack
             )
         },
         bottomBar = {
@@ -53,7 +49,7 @@ fun TaskDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(DesignSystem.Spacing.screenHorizontal)
         ) {
             when {
                 uiState.isLoading -> {
@@ -104,8 +100,7 @@ private fun TaskDetails(task: Task) {
         DetailItem(label = "Mô tả", value = task.description ?: "(Không có mô tả)")
         DetailItem(label = "Người giao", value = task.assignedBy ?: "(Không rõ)")
         task.dueDate?.let {
-            val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            DetailItem(label = "Hạn chót", value = dateFormatter.format(it))
+            DetailItem(label = "Hạn chót", value = DateUtils.formatDate(it))
         }
     }
 }

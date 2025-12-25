@@ -31,6 +31,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.sorms_app.presentation.components.SormsButton
 import com.example.sorms_app.presentation.components.SormsCard
 import com.example.sorms_app.presentation.components.SormsLoading
+import com.example.sorms_app.presentation.components.SormsTopAppBar
+import com.example.sorms_app.presentation.theme.DesignSystem
 import com.example.sorms_app.presentation.viewmodel.UserVerificationViewModel
 import java.io.File
 
@@ -109,22 +111,9 @@ fun UserVerificationScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { 
-                    Column {
-                        Text("Xác thực thông tin")
-                        Text(
-                            text = "Hoàn tất để đặt phòng",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại")
-                    }
-                }
+            SormsTopAppBar(
+                title = "Xác thực thông tin",
+                onNavigateBack = onBack
             )
         }
     ) { innerPadding ->

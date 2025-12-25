@@ -22,10 +22,13 @@ import com.example.sorms_app.domain.model.Booking
 import com.example.sorms_app.presentation.components.SormsBadge
 import com.example.sorms_app.presentation.components.SormsButton
 import com.example.sorms_app.presentation.components.SormsCard
+import com.example.sorms_app.presentation.components.SormsTopAppBar
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
+import com.example.sorms_app.presentation.utils.FormatUtils
 import com.example.sorms_app.presentation.viewmodel.ServiceViewModel
-import java.text.NumberFormat
-import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,8 +40,6 @@ fun ServiceRequestScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val currencyFormat = remember { NumberFormat.getCurrencyInstance(Locale("vi", "VN")) }
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
     // Find the service details from the list
     val service = uiState.services.find { it.id == serviceId }
@@ -74,16 +75,19 @@ fun ServiceRequestScreen(
 
     // Date picker dialog
     val datePickerDialog = remember {
+        val calendar = Calendar.getInstance()
         DatePickerDialog(
             context,
             { _, year, month, day ->
-                val calendar = Calendar.getInstance()
-                calendar.set(year, month, day)
-                selectedDate = calendar.time
+                val cal = Calendar.getInstance()
+                cal.set(Calendar.YEAR, year)
+                cal.set(Calendar.MONTH, month)
+                cal.set(Calendar.DAY_OF_MONTH, day)
+                selectedDate = cal.time
             },
-            Calendar.getInstance().get(Calendar.YEAR),
-            Calendar.getInstance().get(Calendar.MONTH),
-            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
         ).apply {
             datePicker.minDate = System.currentTimeMillis() - 1000
         }
@@ -91,13 +95,9 @@ fun ServiceRequestScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Yêu cầu dịch vụ") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
+            SormsTopAppBar(
+                title = "Yêu cầu dịch vụ",
+                onNavigateBack = onNavigateBack
             )
         }
     ) { innerPadding ->
@@ -116,12 +116,12 @@ fun ServiceRequestScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(DesignSystem.Spacing.screenHorizontal),
+                verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
             ) {
                 // Service Info Card
                 SormsCard {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)) {
                         Text(
                             text = service.name,
                             style = MaterialTheme.typography.titleLarge,
@@ -129,7 +129,7 @@ fun ServiceRequestScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Giá: ${currencyFormat.format(service.unitPrice)}/${service.unitName}",
+                            text = "Giá: ${FormatUtils.formatCurrency(service.unitPrice)}/${service.unitName}",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -179,7 +179,7 @@ fun ServiceRequestScreen(
                                                     fontWeight = FontWeight.Medium
                                                 )
                                                 Text(
-                                                    text = "${dateFormat.format(booking.checkInDate)} - ${dateFormat.format(booking.checkOutDate)}",
+                                                    text = "${booking.checkInDate?.let { DateUtils.formatDate(it) } ?: "N/A"} - ${booking.checkOutDate?.let { DateUtils.formatDate(it) } ?: "N/A"}",
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
@@ -211,7 +211,7 @@ fun ServiceRequestScreen(
                 )
                 
                 OutlinedTextField(
-                    value = selectedDate?.let { dateFormat.format(it) } ?: "",
+                    value = selectedDate?.let { DateUtils.formatDate(it) } ?: "",
                     onValueChange = {},
                     readOnly = true,
                     placeholder = { Text("Chọn ngày") },
@@ -256,7 +256,7 @@ fun ServiceRequestScreen(
                     Spacer(Modifier.weight(1f))
                     
                     Text(
-                        text = "Tổng: ${currencyFormat.format(service.unitPrice * quantity)}",
+                        text = "Tổng: ${FormatUtils.formatCurrency(service.unitPrice * quantity)}",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
@@ -297,8 +297,7 @@ fun ServiceRequestScreen(
                             serviceId = service.id,
                             bookingId = selectedBooking!!.id,
                             quantity = quantity,
-                            serviceDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-                                .format(selectedDate!!),
+                            serviceDate = selectedDate?.let { DateUtils.formatDateToISO(it) } ?: "",
                             notes = notes
                         )
                     },

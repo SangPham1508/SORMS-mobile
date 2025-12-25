@@ -24,13 +24,14 @@ data class MobileOutboundAuthenticateRequest(
 )
 
 data class RefreshTokenRequest(
-    val token: String
+    val refreshToken: String
 )
 
 // Responses matching backend models
 data class AuthenticationResponse(
     val authenticated: Boolean,
     val token: String?,
+    val refreshToken: String?,
     val accountInfo: AccountInfoAuthenticateDTO?
 )
 
@@ -40,7 +41,7 @@ data class AccountInfoAuthenticateDTO(
     val firstName: String?,
     val lastName: String?,
     val avatarUrl: String?,
-    val roleName: List<String>?
+    val roles: List<String>?
 )
 
 

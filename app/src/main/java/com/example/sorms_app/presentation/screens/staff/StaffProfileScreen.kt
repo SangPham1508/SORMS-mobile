@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
 import com.example.sorms_app.presentation.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,16 +31,8 @@ fun StaffProfileScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Hồ sơ nhân viên",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+        SormsTopAppBar(
+            title = "Hồ sơ nhân viên"
         )
 
         when {
@@ -64,8 +57,8 @@ fun StaffProfileScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(DesignSystem.Spacing.screenHorizontal),
+                    verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
                 ) {
                     // Profile Info Card
                     SormsCard {

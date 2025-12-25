@@ -1,23 +1,28 @@
 package com.example.sorms_app.presentation.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import com.example.sorms_app.R
 import com.example.sorms_app.presentation.components.SormsButton
 import com.example.sorms_app.presentation.components.SormsCard
 import com.example.sorms_app.presentation.components.ButtonVariant
+import com.example.sorms_app.presentation.theme.DesignSystem
 
 @Composable
 fun LoginScreen(
@@ -26,116 +31,146 @@ fun LoginScreen(
     modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF5C33D6), // Purple gradient matching splash
-                        Color(0xFF1A0B4D)
+        modifier = modifier.fillMaxSize()
+    ) {
+        // Background Image
+        Image(
+            painter = painterResource(id = R.drawable.bg),
+            contentDescription = "Background",
+            modifier = Modifier
+                .fillMaxSize()
+                .zIndex(0f),
+            contentScale = ContentScale.Crop
+        )
+        
+        // Overlay Gradient để text dễ đọc hơn
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.4f),
+                            Color.Black.copy(alpha = 0.6f)
+                        )
                     )
                 )
-            )
-    ) {
+                .zIndex(1f)
+        )
+        
+        // Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(DesignSystem.Spacing.lg)
+                .zIndex(2f),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo Section
+            // Logo Section với logo thật
             Card(
-                modifier = Modifier.size(120.dp),
+                modifier = Modifier.size(140.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color.White
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                shape = RoundedCornerShape(24.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                shape = RoundedCornerShape(28.dp)
             ) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            color = Color.White,
+                            shape = RoundedCornerShape(28.dp)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Home,
+                    Image(
+                        painter = painterResource(id = R.drawable.logo),
                         contentDescription = "SORMS Logo",
-                        modifier = Modifier.size(60.dp),
-                        tint = Color(0xFF5C33D6)
+                        modifier = Modifier
+                            .size(120.dp)
+                            .padding(12.dp),
+                        contentScale = ContentScale.Fit
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.xl))
 
-            // Title
+            // Title với improved styling
             Text(
                 text = "SORMS",
-                fontSize = 32.sp,
+                fontSize = DesignSystem.Typography.displayLarge + 8.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
-            // Subtitle
+            // Subtitle với improved styling
             Text(
                 text = "Smart Office Residence\nManagement System",
-                fontSize = 16.sp,
-                color = Color.White.copy(alpha = 0.9f),
+                fontSize = DesignSystem.Typography.bodyLarge + 2.sp,
+                color = Color.White.copy(alpha = 0.95f),
                 textAlign = TextAlign.Center,
-                lineHeight = 22.sp
+                lineHeight = DesignSystem.Typography.bodyLarge * 1.4f
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.xxl))
 
-            // Welcome Message Card
-            SormsCard(
-                modifier = Modifier.fillMaxWidth()
+            // Welcome Message Card với improved styling
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.95f)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                shape = RoundedCornerShape(DesignSystem.Sizes.cardCornerRadius)
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding + 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "Chào mừng bạn đến với SORMS",
-                        fontSize = 18.sp,
+                        fontSize = DesignSystem.Typography.h3,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
                     )
                     
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
                     
                     Text(
                         text = "Quản lý đặt phòng, dịch vụ và thanh toán một cách thông minh",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        fontSize = DesignSystem.Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                         textAlign = TextAlign.Center,
-                        lineHeight = 20.sp
+                        lineHeight = DesignSystem.Typography.bodyMedium * 1.5f
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.xl))
 
             // Error Message
             errorMessage?.let { error ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = DesignSystem.Spacing.md),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFEE2E2) // Red 100
+                        containerColor = MaterialTheme.colorScheme.errorContainer
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(DesignSystem.Sizes.cardCornerRadius * 0.75f)
                 ) {
                     Text(
                         text = error,
-                        modifier = Modifier.padding(16.dp),
-                        color = Color(0xFF991B1B), // Red 800
-                        fontSize = 14.sp,
+                        modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding),
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        fontSize = DesignSystem.Typography.bodyMedium,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -149,15 +184,15 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.lg))
 
-            // Footer
+            // Footer với improved styling
             Text(
                 text = "Đăng nhập bằng tài khoản Google của bạn\nđể truy cập vào hệ thống",
-                fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.7f),
+                fontSize = DesignSystem.Typography.bodySmall,
+                color = Color.White.copy(alpha = 0.85f),
                 textAlign = TextAlign.Center,
-                lineHeight = 16.sp
+                lineHeight = DesignSystem.Typography.bodySmall * 1.4f
             )
         }
     }

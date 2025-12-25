@@ -16,14 +16,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sorms_app.domain.model.Booking
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
+import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.UserDashboardViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,17 +39,19 @@ fun UserDashboardScreen(
     modifier: Modifier = Modifier,
     viewModel: UserDashboardViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
+    // Load data when screen is first composed
     LaunchedEffect(Unit) {
         viewModel.loadDashboardData()
     }
 
+    Box(modifier = modifier.fillMaxSize()) {
     LazyColumn(
-        modifier = modifier
+            modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(DesignSystem.Spacing.screenHorizontal),
+        verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
     ) {
         // Welcome Section
         item {
@@ -85,6 +90,7 @@ fun UserDashboardScreen(
                 serviceOrders = uiState.serviceOrdersCount,
                 unpaidOrders = uiState.unpaidOrdersCount
             )
+        }
         }
     }
 }
@@ -180,8 +186,8 @@ private fun CurrentBookingSection(
                 
                 currentBooking?.let { booking ->
                     SormsBadge(
-                        text = getStatusText(booking.status),
-                        tone = getStatusBadgeTone(booking.status)
+                        text = StatusUtils.getBookingStatusText(booking.status),
+                        tone = StatusUtils.getBookingStatusBadgeTone(booking.status)
                     )
                 }
             }
@@ -202,13 +208,13 @@ private fun CurrentBookingSection(
                     
                     BookingInfoCard(
                         title = "Check-in",
-                        value = formatDate(currentBooking.checkInDate),
+                        value = DateUtils.formatDateShort(currentBooking.checkInDate),
                         modifier = Modifier.weight(1f)
                     )
                     
                     BookingInfoCard(
                         title = "Check-out",
-                        value = formatDate(currentBooking.checkOutDate),
+                        value = DateUtils.formatDateShort(currentBooking.checkOutDate),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -495,29 +501,3 @@ private data class QuickAction(
     val icon: ImageVector,
     val onClick: () -> Unit
 )
-
-private fun getStatusText(status: String): String {
-    return when (status.uppercase()) {
-        "PENDING" -> "Chờ duyệt"
-        "APPROVED" -> "Đã duyệt"
-        "CHECKED_IN" -> "Đã check-in"
-        "CHECKED_OUT" -> "Đã check-out"
-        "CANCELLED" -> "Đã hủy"
-        "REJECTED" -> "Từ chối"
-        else -> status
-    }
-}
-
-private fun getStatusBadgeTone(status: String): BadgeTone {
-    return when (status.uppercase()) {
-        "CHECKED_IN", "APPROVED" -> BadgeTone.Success
-        "PENDING" -> BadgeTone.Warning
-        "CANCELLED", "REJECTED" -> BadgeTone.Error
-        else -> BadgeTone.Default
-    }
-}
-
-private fun formatDate(date: Date): String {
-    val formatter = SimpleDateFormat("dd/MM", Locale.getDefault())
-    return formatter.format(date)
-}

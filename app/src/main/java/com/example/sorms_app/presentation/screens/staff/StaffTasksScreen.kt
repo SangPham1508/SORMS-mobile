@@ -14,11 +14,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.sorms_app.domain.model.Priority
 import com.example.sorms_app.domain.model.Task
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
+import com.example.sorms_app.presentation.utils.PriorityUtils
+import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.TaskViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,9 +32,10 @@ fun StaffTasksScreen(
     modifier: Modifier = Modifier,
     viewModel: TaskViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedFilter by remember { mutableStateOf("Tất cả") }
     
+    // Load data when screen is first composed
     LaunchedEffect(Unit) {
         viewModel.loadTasks()
     }
@@ -41,7 +46,7 @@ fun StaffTasksScreen(
             "Đang thực hiện" -> uiState.tasks.filter { it.status.name == "IN_PROGRESS" }
             "Hoàn thành" -> uiState.tasks.filter { it.status.name == "COMPLETED" }
             "Quá hạn" -> uiState.tasks.filter { 
-                it.status.name != "COMPLETED" && isOverdue(it.dueDate?.toString())
+                it.status.name != "COMPLETED" && DateUtils.isOverdue(it.dueDate?.toString())
             }
             else -> uiState.tasks
         }
@@ -51,32 +56,21 @@ fun StaffTasksScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
-        TopAppBar(
-            title = { 
-                Text(
-                    text = "Nhiệm vụ của tôi",
-                    fontWeight = FontWeight.SemiBold
-                ) 
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại"
-                    )
-                }
-            },
+        SormsTopAppBar(
+            title = "Nhiệm vụ của tôi",
+            onNavigateBack = onNavigateBack,
             actions = {
-                IconButton(onClick = { viewModel.refresh() }) {
+                IconButton(
+                    onClick = {
+                        viewModel.refresh()
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Làm mới"
                     )
                 }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+            }
         )
 
         when {
@@ -104,10 +98,11 @@ fun StaffTasksScreen(
             }
             
             else -> {
+                Box(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),
+                    verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.listItemSpacing)
                 ) {
                     // Filter Section
                     item {
@@ -136,6 +131,7 @@ fun StaffTasksScreen(
                                 viewModel.updateTaskStatus(task.id, newStatus)
                             }
                         )
+                        }
                     }
                 }
             }
@@ -152,7 +148,7 @@ private fun FilterSection(
     
     SormsCard {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
         ) {
             Text(
                 text = "Lọc nhiệm vụ",
@@ -187,7 +183,7 @@ private fun TaskStatisticsCard(
 ) {
     SormsCard {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
         ) {
             Text(
                 text = "Thống kê nhiệm vụ",
@@ -249,21 +245,14 @@ private fun StatisticItem(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            modifier = Modifier.size(24.dp),
-            tint = color
-        )
-        
-        Spacer(modifier = Modifier.height(4.dp))
-        
         Text(
             text = value,
-            fontSize = 18.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = color
         )
+        
+        Spacer(modifier = Modifier.height(4.dp))
         
         Text(
             text = label,
@@ -309,8 +298,8 @@ private fun TaskCard(
                 }
                 
                 SormsBadge(
-                    text = getTaskStatusText(task.status),
-                    tone = getTaskStatusBadgeTone(task.status)
+                    text = StatusUtils.getTaskStatusText(task.status.name),
+                    tone = StatusUtils.getTaskStatusBadgeTone(task.status.name)
                 )
             }
             
@@ -328,31 +317,31 @@ private fun TaskCard(
             }
             
             // Task Details
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                task.dueDate?.let {
                 TaskDetailItem(
-                    icon = Icons.Default.DateRange,
-                    label = "Hạn",
-                    value = formatDate(task.dueDate?.toString()),
-                    isOverdue = isOverdue(task.dueDate?.toString()) && task.status.name != "COMPLETED",
-                    modifier = Modifier.weight(1f)
-                )
+                        label = "Hạn chót",
+                        value = DateUtils.formatDateTimeShort(it.toString()),
+                        isOverdue = DateUtils.isOverdue(it.toString()) && task.status.name != "COMPLETED"
+                    )
+                }
                 
+                task.priority?.let {
                 TaskDetailItem(
-                    icon = Icons.Default.Flag,
                     label = "Ưu tiên",
-                    value = getPriorityText(task.priority?.name),
-                    modifier = Modifier.weight(1f)
+                        value = PriorityUtils.getPriorityText(it.name)
                 )
+                }
                 
+                task.booking?.roomName?.let {
                 TaskDetailItem(
-                    icon = Icons.Default.Business,
                     label = "Phòng",
-                    value = task.booking?.roomName ?: "N/A",
-                    modifier = Modifier.weight(1f)
+                        value = it
                 )
+                }
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -399,87 +388,25 @@ private fun TaskCard(
 
 @Composable
 private fun TaskDetailItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     value: String,
-    isOverdue: Boolean = false,
-    modifier: Modifier = Modifier
+    isOverdue: Boolean = false
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            modifier = Modifier.size(20.dp),
-            tint = if (isOverdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-        )
-        
-        Spacer(modifier = Modifier.height(4.dp))
-        
         Text(
             text = label,
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
         Text(
             text = value,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = if (isOverdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
         )
-    }
-}
-
-// Helper functions
-private fun getTaskStatusText(status: com.example.sorms_app.domain.model.Status): String {
-    return when (status.name.uppercase()) {
-        "PENDING" -> "Chờ xử lý"
-        "IN_PROGRESS" -> "Đang thực hiện"
-        "COMPLETED" -> "Hoàn thành"
-        "CANCELLED" -> "Đã hủy"
-        else -> status.name
-    }
-}
-
-private fun getTaskStatusBadgeTone(status: com.example.sorms_app.domain.model.Status): BadgeTone {
-    return when (status.name.uppercase()) {
-        "COMPLETED" -> BadgeTone.Success
-        "IN_PROGRESS" -> BadgeTone.Default
-        "PENDING" -> BadgeTone.Warning
-        "CANCELLED" -> BadgeTone.Error
-        else -> BadgeTone.Default
-    }
-}
-
-private fun getPriorityText(priority: String?): String {
-    return when (priority?.uppercase()) {
-        "HIGH" -> "Cao"
-        "MEDIUM" -> "Trung bình"
-        "LOW" -> "Thấp"
-        else -> "Bình thường"
-    }
-}
-
-private fun formatDate(dateString: String?): String {
-    if (dateString.isNullOrEmpty()) return "N/A"
-    return try {
-        val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(dateString)
-        val formatter = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
-        formatter.format(date ?: Date())
-    } catch (e: Exception) {
-        dateString
-    }
-}
-
-private fun isOverdue(dateString: String?): Boolean {
-    if (dateString.isNullOrEmpty()) return false
-    return try {
-        val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(dateString)
-        date?.before(Date()) == true
-    } catch (e: Exception) {
-        false
     }
 }

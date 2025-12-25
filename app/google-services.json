@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "279402674410",
-    "project_id": "sorms-app",
-    "storage_bucket": "sorms-app.firebasestorage.app"
+    "project_number": "284810550886",
+    "project_id": "capstone-pronject-90955",
+    "storage_bucket": "capstone-pronject-90955.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:279402674410:android:70f591d86213bdaeeebf93",
+        "mobilesdk_app_id": "1:284810550886:android:acb2dc6084e9167cfb17a7",
         "android_client_info": {
           "package_name": "com.example.sorms_app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "279402674410-qt9m5128pjk6o0pb2lvgarl0qam7oaoc.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.sorms_app",
-            "certificate_hash": "38acfe4953df9d4463a6de8d8b77931bab604ccd"
-          }
-        },
-        {
-          "client_id": "279402674410-lvo42ta2jm7lo6mhjv313i3bpu4g48re.apps.googleusercontent.com",
+          "client_id": "284810550886-hbvn2fvvjdv392iu2hqc6jvtgdovaqmt.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBydh8-VNk2A40fd1h4iwUMRDxk3xpsn38"
+          "current_key": "AIzaSyCrjktiT4Dy8v9aw0MOfKkfvLWW5hXhKf4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "279402674410-lvo42ta2jm7lo6mhjv313i3bpu4g48re.apps.googleusercontent.com",
+              "client_id": "284810550886-559qg6vjm81p1unb1e6g19lc3dvpv232.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
