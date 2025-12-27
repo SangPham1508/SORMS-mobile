@@ -1,4 +1,4 @@
-package com.example.sorms_app.presentation.screens.user
+package com.example.sorms_app.presentation.screens.user.oder
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,9 +51,13 @@ fun OrderDetailScreen(
         }
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
         // Top App Bar
         SormsTopAppBar(
             title = "Chi tiết đơn hàng",
@@ -390,6 +394,7 @@ fun OrderDetailScreen(
                 }
             }
         )
+        }
     }
 }
 

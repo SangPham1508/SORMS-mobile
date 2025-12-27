@@ -1,4 +1,4 @@
-package com.example.sorms_app.presentation.screens.user
+package com.example.sorms_app.presentation.screens.user.verification
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -37,9 +37,13 @@ fun FaceManagementScreen(
         viewModel.loadFaceData()
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
         // Top App Bar
         SormsTopAppBar(
             title = "Quản lý nhận diện",
@@ -106,6 +110,7 @@ fun FaceManagementScreen(
                 }
             }
         )
+    }
     }
 }
 
@@ -315,18 +320,13 @@ private fun FaceDataManagement(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedButton(
+                    SormsButton(
                         onClick = onRefresh,
+                        text = "Làm mới",
+                        variant = ButtonVariant.Secondary,
+                        isOutlined = true,
                         modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Làm mới")
-                    }
+                    )
 
                     SormsButton(
                         onClick = onRegisterNew,

@@ -24,7 +24,7 @@ data class MobileOutboundAuthenticateRequest(
 )
 
 data class RefreshTokenRequest(
-    val refreshToken: String
+    val refreshToken: String   
 )
 
 // Responses matching backend models

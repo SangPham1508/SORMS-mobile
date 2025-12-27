@@ -11,10 +11,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.sorms_app.presentation.screens.staff.StaffDashboardScreen
-import com.example.sorms_app.presentation.screens.staff.StaffTasksScreen
-import com.example.sorms_app.presentation.screens.staff.StaffOrdersScreen
-import com.example.sorms_app.presentation.screens.staff.StaffProfileScreen
+import com.example.sorms_app.presentation.screens.staff.dashboards.StaffDashboardScreen
+import com.example.sorms_app.presentation.screens.staff.tasks.StaffTasksScreen
+import com.example.sorms_app.presentation.screens.staff.oders.StaffOrdersScreen
+import com.example.sorms_app.presentation.screens.staff.profiles.StaffProfileScreen
 
 enum class StaffTab(
     val route: String,

@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.sorms_app.data.datasource.remote.ServiceApiService
-import com.example.sorms_app.data.datasource.remote.ServiceRequest
 import com.example.sorms_app.data.datasource.remote.ServiceResponse
 import com.example.sorms_app.domain.model.Service
 import com.example.sorms_app.domain.repository.ServiceRepository
@@ -35,15 +34,12 @@ class ServiceRepositoryImpl @Inject constructor(
     }
 
     override suspend fun createServiceRequest(serviceId: String, notes: String) {
-        try {
-            val request = ServiceRequest(serviceId = serviceId, notes = notes)
-            val response = api.createServiceRequest(request)
-            if (!response.isSuccessful) {
-                throw Exception("Failed to create service request: ${response.code()} - ${response.message()}")
-            }
-        } catch (e: Exception) {
-            throw Exception("Network error creating service request: ${e.message}")
-        }
+        // DEPRECATED: This method is no longer supported
+        // Use OrderApiService.createOrderCart() or createServiceOrder() instead
+        throw UnsupportedOperationException(
+            "createServiceRequest() is deprecated. " +
+            "Please use OrderApiService.createOrderCart() or createServiceOrder() instead."
+        )
     }
 
     private fun ServiceResponse.toDomainModel(): Service {

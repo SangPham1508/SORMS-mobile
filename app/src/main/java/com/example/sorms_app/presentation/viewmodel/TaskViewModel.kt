@@ -74,26 +74,16 @@ class TaskViewModel @Inject constructor(
             }
             
             try {
-                // TODO: Implement task status update API call
-                // For now, simulate the update
-                kotlinx.coroutines.delay(1000)
+                val status = com.example.sorms_app.domain.model.Status.valueOf(newStatus)
+                taskRepository.updateTaskStatus(taskId, status)
                 
-                // Update local state
-                val updatedTasks = _uiState.value.tasks.map { task ->
-                    if (task.id == taskId) {
-                        task.copy(
-                            status = com.example.sorms_app.domain.model.Status.valueOf(newStatus)
-                        )
-                    } else {
-                        task
-                    }
-                }
+                // Refresh tasks after update
+                loadTasks()
                 
                 _uiState.update { 
                     it.copy(
                         isUpdating = false,
-                        updateSuccess = true,
-                        tasks = updatedTasks
+                        updateSuccess = true
                     ) 
                 }
             } catch (e: Exception) {

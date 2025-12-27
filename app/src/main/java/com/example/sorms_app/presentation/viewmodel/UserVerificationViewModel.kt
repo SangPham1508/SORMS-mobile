@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sorms_app.data.datasource.local.AuthSession
+import com.example.sorms_app.data.datasource.remote.FaceRecognitionApiService
 import com.example.sorms_app.data.datasource.remote.UpdateProfileRequest
 import com.example.sorms_app.data.datasource.remote.UserApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,7 +51,8 @@ data class UserVerificationUiState(
 
 @HiltViewModel
 class UserVerificationViewModel @Inject constructor(
-    private val userApiService: UserApiService
+    private val userApiService: UserApiService,
+    private val faceRecognitionApiService: FaceRecognitionApiService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UserVerificationUiState())
@@ -219,13 +221,12 @@ class UserVerificationViewModel @Inject constructor(
                 ).forEach { (uri, name) ->
                     val file = uriToFile(context, uri!!, "face_$name.jpg")
                     val requestBody = file.asRequestBody("image/jpeg".toMediaType())
-                    faceImages.add(MultipartBody.Part.createFormData("faceImages", file.name, requestBody))
+                    faceImages.add(MultipartBody.Part.createFormData("images", file.name, requestBody))
                 }
 
                 val userIdBody = userId.toRequestBody("text/plain".toMediaType())
-                val nameBody = (state.fullName.ifBlank { "User" }).toRequestBody("text/plain".toMediaType())
 
-                val response = userApiService.registerFace(userIdBody, nameBody, faceImages)
+                val response = faceRecognitionApiService.registerFace(userIdBody, faceImages)
 
                 if (response.isSuccessful && response.body()?.data?.success == true) {
                     _uiState.update { 

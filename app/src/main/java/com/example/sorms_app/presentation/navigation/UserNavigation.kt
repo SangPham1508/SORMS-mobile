@@ -14,18 +14,18 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
-import com.example.sorms_app.presentation.screens.UserDashboardScreen
-import com.example.sorms_app.presentation.screens.user.RoomsScreen
-import com.example.sorms_app.presentation.screens.user.ServicesScreen
-import com.example.sorms_app.presentation.screens.user.OrdersScreen
+import com.example.sorms_app.presentation.screens.user.dashboard.UserDashboardScreen
+import com.example.sorms_app.presentation.screens.user.rooms.RoomsScreen
+import com.example.sorms_app.presentation.screens.user.services.ServicesScreen
+import com.example.sorms_app.presentation.screens.user.oder.OrdersScreen
 import com.example.sorms_app.presentation.screens.user.profile.ProfileScreen
-import com.example.sorms_app.presentation.screens.user.BookingDetailScreen
-import com.example.sorms_app.presentation.screens.user.ServiceDetailScreen
-import com.example.sorms_app.presentation.screens.user.OrderDetailScreen
-import com.example.sorms_app.presentation.screens.user.CartScreen
-import com.example.sorms_app.presentation.screens.user.FaceRegisterScreen
-import com.example.sorms_app.presentation.screens.user.FaceManagementScreen
-import com.example.sorms_app.presentation.screens.user.HistoryScreen
+import com.example.sorms_app.presentation.screens.user.bookings.BookingDetailScreen
+import com.example.sorms_app.presentation.screens.user.services.ServiceDetailScreen
+import com.example.sorms_app.presentation.screens.user.oder.OrderDetailScreen
+import com.example.sorms_app.presentation.screens.user.services.CartScreen
+import com.example.sorms_app.presentation.screens.user.verification.FaceRegisterScreen
+import com.example.sorms_app.presentation.screens.user.verification.FaceManagementScreen
+import com.example.sorms_app.presentation.screens.user.history.HistoryScreen
 
 enum class UserTab(
     val route: String,

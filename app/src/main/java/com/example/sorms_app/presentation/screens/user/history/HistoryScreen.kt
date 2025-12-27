@@ -1,23 +1,53 @@
-package com.example.sorms_app.presentation.screens.user
+package com.example.sorms_app.presentation.screens.user.history
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Hotel
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.getValue
 import com.example.sorms_app.domain.model.Booking
-import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.components.ButtonVariant
+import com.example.sorms_app.presentation.components.SormsBadge
+import com.example.sorms_app.presentation.components.SormsButton
+import com.example.sorms_app.presentation.components.SormsCard
+import com.example.sorms_app.presentation.components.SormsEmptyState
+import com.example.sorms_app.presentation.components.SormsTopAppBar
 import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.theme.SORMS_appTheme
 import com.example.sorms_app.presentation.utils.DateUtils
 import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.HistoryViewModel
@@ -32,74 +62,72 @@ fun HistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Load data when screen is first composed
     LaunchedEffect(Unit) {
         viewModel.loadHistory()
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        // Top App Bar
-        SormsTopAppBar(
-            title = "Lịch sử booking",
-            onNavigateBack = onNavigateBack
-        )
+        Column(modifier = Modifier.fillMaxSize()) {
+            SormsTopAppBar(
+                title = "Lịch sử booking",
+                onNavigateBack = onNavigateBack
+            )
 
-        when {
-            uiState.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            }
-            
-            uiState.errorMessage != null -> {
-                SormsEmptyState(
-                    title = "Có lỗi xảy ra",
-                    subtitle = uiState.errorMessage!!
-                )
-            }
-            
-            uiState.bookings.isEmpty() -> {
-                SormsEmptyState(
-                    title = "Chưa có lịch sử",
-                    subtitle = "Bạn chưa có booking nào. Hãy đặt phòng để bắt đầu!"
-                )
-            }
-            
-            else -> {
-                Box(modifier = Modifier.fillMaxSize()) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),
-                    verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.listItemSpacing)
-                ) {
-                    // Filter Section
-                    item {
-                        FilterSection(
-                            selectedFilter = uiState.selectedFilter,
-                            onFilterChanged = viewModel::setFilter
-                        )
-                    }
-                    
-                    // Statistics Card
-                    item {
-                        StatisticsCard(
-                            totalBookings = uiState.bookings.size,
-                            completedBookings = uiState.bookings.count { it.status == "COMPLETED" },
-                            cancelledBookings = uiState.bookings.count { it.status == "CANCELLED" }
-                        )
-                    }
-                    
-                    // Bookings List
-                    items(uiState.filteredBookings) { booking ->
-                        HistoryBookingCard(
-                            booking = booking,
-                            onBookingClick = { onBookingSelected(booking) }
-                        )
+
+                uiState.errorMessage != null -> {
+                    SormsEmptyState(
+                        title = "Có lỗi xảy ra",
+                        subtitle = uiState.errorMessage!!
+                    )
+                }
+
+                uiState.bookings.isEmpty() -> {
+                    SormsEmptyState(
+                        title = "Chưa có lịch sử",
+                        subtitle = "Bạn chưa có booking nào. Hãy đặt phòng để bắt đầu!"
+                    )
+                }
+
+                else -> {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),
+                            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.listItemSpacing)
+                        ) {
+                            item {
+                                FilterSection(
+                                    selectedFilter = uiState.selectedFilter,
+                                    onFilterChanged = viewModel::setFilter
+                                )
+                            }
+
+                            item {
+                                StatisticsCard(
+                                    totalBookings = uiState.bookings.size,
+                                    completedBookings = uiState.bookings.count { booking -> booking.status == "COMPLETED" },
+                                    cancelledBookings = uiState.bookings.count { booking -> booking.status == "CANCELLED" }
+                                )
+                            }
+
+                            items(items = uiState.filteredBookings) { booking ->
+                                HistoryBookingCard(
+                                    booking = booking,
+                                    onBookingClick = { onBookingSelected(booking) }
+                                )
+                            }
                         }
                     }
                 }
@@ -114,23 +142,19 @@ private fun FilterSection(
     onFilterChanged: (String) -> Unit
 ) {
     val filters = listOf("Tất cả", "Hoàn thành", "Đã hủy", "Đang diễn ra")
-    
+
     SormsCard {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "Lọc theo trạng thái",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(filters) { filter ->
                     FilterChip(
                         selected = selectedFilter == filter,
@@ -150,17 +174,15 @@ private fun StatisticsCard(
     cancelledBookings: Int
 ) {
     SormsCard {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "Thống kê",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -172,7 +194,7 @@ private fun StatisticsCard(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 StatisticItem(
                     icon = Icons.Default.CheckCircle,
                     label = "Hoàn thành",
@@ -180,7 +202,7 @@ private fun StatisticsCard(
                     color = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 StatisticItem(
                     icon = Icons.Default.Cancel,
                     label = "Đã hủy",
@@ -205,22 +227,22 @@ private fun StatisticItem(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
+        androidx.compose.material3.Icon(
             imageVector = icon,
             contentDescription = label,
             modifier = Modifier.size(32.dp),
             tint = color
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = value,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = color
         )
-        
+
         Text(
             text = label,
             fontSize = 12.sp,
@@ -240,38 +262,34 @@ private fun HistoryBookingCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Booking Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = booking.roomName ?: "Phòng #${booking.roomId}",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    
+
                     Text(
                         text = "Booking #${booking.id}",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
-                
+
                 SormsBadge(
                     text = StatusUtils.getBookingStatusText(booking.status),
                     tone = StatusUtils.getBookingStatusBadgeTone(booking.status)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
-            // Booking Details
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -282,14 +300,14 @@ private fun HistoryBookingCard(
                     value = DateUtils.formatDate(booking.checkInDate?.toString()),
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 BookingDetailItem(
                     icon = Icons.Default.Schedule,
-                    label = "Check-out", 
+                    label = "Check-out",
                     value = DateUtils.formatDate(booking.checkOutDate?.toString()),
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 BookingDetailItem(
                     icon = Icons.Default.People,
                     label = "Khách",
@@ -297,12 +315,10 @@ private fun HistoryBookingCard(
                     modifier = Modifier.weight(1f)
                 )
             }
-            
-            // Special Requests
+
             booking.notes?.let { requests ->
                 if (requests.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(12.dp))
-                    
                     Text(
                         text = "Yêu cầu đặc biệt: $requests",
                         fontSize = 14.sp,
@@ -310,16 +326,16 @@ private fun HistoryBookingCard(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
-            // Action Button
-            OutlinedButton(
+
+            SormsButton(
                 onClick = onBookingClick,
+                text = "Xem chi tiết",
+                variant = ButtonVariant.Secondary,
+                isOutlined = true,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Xem chi tiết")
-            }
+            )
         }
     }
 }
@@ -335,21 +351,21 @@ private fun BookingDetailItem(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
+        androidx.compose.material3.Icon(
             imageVector = icon,
             contentDescription = label,
             modifier = Modifier.size(20.dp),
             tint = MaterialTheme.colorScheme.primary
         )
-        
+
         Spacer(modifier = Modifier.height(4.dp))
-        
+
         Text(
             text = label,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
-        
+
         Text(
             text = value,
             fontSize = 14.sp,
@@ -359,4 +375,13 @@ private fun BookingDetailItem(
     }
 }
 
-
+@Preview(showBackground = true, name = "History Screen")
+@Composable
+private fun HistoryScreenPreview() {
+    SORMS_appTheme {
+        HistoryScreen(
+            onNavigateBack = {},
+            onBookingSelected = {}
+        )
+    }
+}

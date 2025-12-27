@@ -1,4 +1,4 @@
-package com.example.sorms_app.presentation.screens.staff
+package com.example.sorms_app.presentation.screens.staff.profiles
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -27,9 +27,13 @@ fun StaffProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = modifier.fillMaxSize()
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
         // Top App Bar
         SormsTopAppBar(
             title = "Hồ sơ nhân viên"
@@ -227,6 +231,7 @@ fun StaffProfileScreen(
                 }
             }
         )
+    }
     }
 }
 

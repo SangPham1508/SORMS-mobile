@@ -2,7 +2,7 @@ package com.example.sorms_app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.sorms_app.presentation.screens.user.CartItem
+import com.example.sorms_app.presentation.screens.user.services.CartItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

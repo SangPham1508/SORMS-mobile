@@ -48,11 +48,48 @@ interface OrderApiService {
 
     // POST /orders/{orderId}/confirm - Confirm order
     @POST("orders/{orderId}/confirm")
-    suspend fun confirmOrder(@Path("orderId") orderId: Long): Response<ApiResponse<ServiceOrderResponse>>
+    suspend fun confirmOrder(
+        @Path("orderId") orderId: Long,
+        @Body request: ConfirmOrderRequest
+    ): Response<ApiResponse<ServiceOrderResponse>>
 
     // POST /orders/{orderId}/cancel - Cancel order (user side)
     @POST("orders/{orderId}/cancel")
     suspend fun cancelOrder(@Path("orderId") orderId: Long): Response<ApiResponse<ServiceOrderResponse>>
+
+    // ========== Staff-Confirmed Ordering Workflow Endpoints ==========
+
+    // POST /orders/service - Create service order with staff confirmation workflow
+    @POST("orders/service")
+    suspend fun createServiceOrder(@Body request: CreateServiceOrderRequest): Response<ApiResponse<ServiceOrderResponse>>
+
+    // POST /orders/{orderId}/staff/confirm - Staff confirms a service order
+    @POST("orders/{orderId}/staff/confirm")
+    suspend fun staffConfirmOrder(
+        @Path("orderId") orderId: Long,
+        @Body request: StaffConfirmOrderRequest
+    ): Response<ApiResponse<ServiceOrderResponse>>
+
+    // POST /orders/{orderId}/staff/reject - Staff rejects a service order
+    @POST("orders/{orderId}/staff/reject")
+    suspend fun staffRejectOrder(
+        @Path("orderId") orderId: Long,
+        @Body request: StaffRejectOrderRequest
+    ): Response<ApiResponse<ServiceOrderResponse>>
+
+    // GET /orders/staff/{staffId}/tasks - Get all orders (tasks) assigned to a staff member
+    @GET("orders/staff/{staffId}/tasks")
+    suspend fun getStaffTasks(
+        @Path("staffId") staffId: Long,
+        @Query("status") status: String? = null
+    ): Response<ApiResponse<List<ServiceOrderResponse>>>
+
+    // GET /orders/staff/{staffId}/tasks/{orderId} - Get detailed order information for staff
+    @GET("orders/staff/{staffId}/tasks/{orderId}")
+    suspend fun getStaffTaskDetail(
+        @Path("staffId") staffId: Long,
+        @Path("orderId") orderId: Long
+    ): Response<ApiResponse<ServiceOrderResponse>>
 
     // POST /payments/create - Create payment
     @POST("payments/create")
@@ -83,11 +120,41 @@ data class UpdateOrderItemRequest(
     @SerializedName("quantity") val quantity: Int
 )
 
+data class ConfirmOrderRequest(
+    @SerializedName("orderId") val orderId: Long? = null, // Set by path variable
+    @SerializedName("note") val note: String? = null
+)
+
 data class CreatePaymentRequest(
     @SerializedName("serviceOrderId") val serviceOrderId: Long,
     @SerializedName("method") val method: String, // CASH, CARD, BANK_TRANSFER, WALLET
     @SerializedName("returnUrl") val returnUrl: String? = null,
     @SerializedName("cancelUrl") val cancelUrl: String? = null
+)
+
+// ==================== Staff Order Request Models ====================
+
+data class CreateServiceOrderRequest(
+    @SerializedName("bookingId") val bookingId: Long,
+    @SerializedName("orderId") val orderId: Long,
+    @SerializedName("serviceId") val serviceId: Long,
+    @SerializedName("quantity") val quantity: java.math.BigDecimal,
+    @SerializedName("assignedStaffId") val assignedStaffId: Long,
+    @SerializedName("requestedBy") val requestedBy: String,
+    @SerializedName("serviceTime") val serviceTime: String, // ISO-8601 datetime string
+    @SerializedName("note") val note: String? = null
+)
+
+data class StaffConfirmOrderRequest(
+    @SerializedName("orderId") val orderId: Long? = null, // Set by path variable
+    @SerializedName("staffId") val staffId: Long,
+    @SerializedName("confirmationNote") val confirmationNote: String? = null
+)
+
+data class StaffRejectOrderRequest(
+    @SerializedName("orderId") val orderId: Long? = null, // Set by path variable
+    @SerializedName("staffId") val staffId: Long,
+    @SerializedName("rejectionReason") val rejectionReason: String
 )
 
 // ==================== Response Models ====================

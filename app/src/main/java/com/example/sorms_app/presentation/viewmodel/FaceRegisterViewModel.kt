@@ -2,9 +2,9 @@ package com.example.sorms_app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.sorms_app.presentation.screens.user.FaceRegisterUiState
-import com.example.sorms_app.presentation.screens.user.FaceRegisterStep
-import com.example.sorms_app.presentation.screens.user.CaptureType
+import com.example.sorms_app.presentation.screens.user.verification.FaceRegisterUiState
+import com.example.sorms_app.presentation.screens.user.verification.FaceRegisterStep
+import com.example.sorms_app.presentation.screens.user.verification.CaptureType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

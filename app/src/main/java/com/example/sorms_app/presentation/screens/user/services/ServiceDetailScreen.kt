@@ -1,4 +1,4 @@
-package com.example.sorms_app.presentation.screens.user
+package com.example.sorms_app.presentation.screens.user.services
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState

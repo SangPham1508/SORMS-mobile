@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.POST
 
 /**
@@ -16,9 +17,9 @@ interface ServiceApiService {
     @GET("services")
     suspend fun getAvailableServices(): Response<ApiResponse<List<ServiceResponse>>>
 
-    // POST /orders - Legacy endpoint for creating service request
-    @POST("orders")
-    suspend fun createServiceRequest(@Body request: ServiceRequest): Response<ApiResponse<Any>>
+    // GET /services/{id} - Get service by ID
+    @GET("services/{id}")
+    suspend fun getServiceById(@Path("id") id: Long): Response<ApiResponse<ServiceResponse>>
 }
 
 /**
@@ -37,12 +38,4 @@ data class ServiceResponse(
     @SerializedName("lastModifiedDate") val lastModifiedDate: String?,
     // Legacy field for icon mapping
     @SerializedName("icon") val iconName: String?
-)
-
-/**
- * Legacy service request
- */
-data class ServiceRequest(
-    @SerializedName("serviceId") val serviceId: String,
-    @SerializedName("notes") val notes: String
 )

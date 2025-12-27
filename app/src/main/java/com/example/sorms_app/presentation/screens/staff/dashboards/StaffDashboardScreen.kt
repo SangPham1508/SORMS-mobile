@@ -1,4 +1,4 @@
-package com.example.sorms_app.presentation.screens.staff
+package com.example.sorms_app.presentation.screens.staff.dashboards
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -21,7 +22,11 @@ import com.example.sorms_app.domain.model.Task
 import com.example.sorms_app.domain.model.Priority
 import com.example.sorms_app.domain.model.Status
 import com.example.sorms_app.presentation.components.*
+import com.example.sorms_app.presentation.theme.Blue400
 import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.theme.Green500
+import com.example.sorms_app.presentation.theme.SORMS_appTheme
+import com.example.sorms_app.presentation.theme.Yellow500
 import com.example.sorms_app.presentation.utils.DateUtils
 import com.example.sorms_app.presentation.utils.PriorityUtils
 import com.example.sorms_app.presentation.utils.StatusUtils
@@ -67,13 +72,16 @@ fun StaffDashboardScreen(
         viewModel.loadTasks()
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
-    LazyColumn(
-            modifier = Modifier
-            .fillMaxSize()
-            .padding(DesignSystem.Spacing.screenHorizontal),
-        verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(DesignSystem.Spacing.screenHorizontal),
+            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
+        ) {
         // Welcome Section
         item {
             StaffWelcomeSection(
@@ -243,7 +251,7 @@ private fun TaskSummarySection(
         TaskSummaryCard(
             title = "Chờ xử lý",
             count = pendingTasks,
-            color = Color(0xFFF59E0B), // Amber
+            color = Yellow500,
             modifier = Modifier.weight(1f)
         )
     }
@@ -257,14 +265,14 @@ private fun TaskSummarySection(
         TaskSummaryCard(
             title = "Đang làm",
             count = inProgressTasks,
-            color = Color(0xFF3B82F6), // Blue
+            color = Blue400,
             modifier = Modifier.weight(1f)
         )
         
         TaskSummaryCard(
             title = "Hoàn thành",
             count = completedTasks,
-            color = Color(0xFF10B981), // Green
+            color = Green500,
             modifier = Modifier.weight(1f)
         )
     }
@@ -439,5 +447,16 @@ private fun TaskCard(
     }
 }
 
+@Preview(showBackground = true, name = "Staff Dashboard Screen")
+@Composable
+private fun StaffDashboardScreenPreview() {
+    SORMS_appTheme {
+        StaffDashboardScreen(
+            onNavigateToTasks = {},
+            onNavigateToOrders = {},
+            onTaskSelected = {}
+        )
+    }
+}
 
 

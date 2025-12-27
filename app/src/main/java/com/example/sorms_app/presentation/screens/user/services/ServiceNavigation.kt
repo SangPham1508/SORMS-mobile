@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.sorms_app.presentation.screens.user.ServicesScreen
+import com.example.sorms_app.presentation.screens.user.services.ServicesScreen
 import com.example.sorms_app.presentation.viewmodel.ServiceViewModel
 
 object ServiceRoutes {

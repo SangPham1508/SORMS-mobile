@@ -1,4 +1,4 @@
-package com.example.sorms_app.presentation.screens.user
+package com.example.sorms_app.presentation.screens.user.verification
 
 import android.Manifest
 import android.widget.Toast
@@ -62,9 +62,13 @@ fun FaceRegisterScreen(
         }
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
         // Top App Bar
         SormsTopAppBar(
             title = "Đăng ký nhận diện",
@@ -154,6 +158,7 @@ fun FaceRegisterScreen(
                     onComplete = { viewModel.completeFaceRegistration() }
                 )
             }
+        }
         }
     }
 }
@@ -314,12 +319,13 @@ private fun CameraPermissionStep(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(
+            SormsButton(
                 onClick = onBack,
+                text = "Quay lại",
+                variant = ButtonVariant.Secondary,
+                isOutlined = true,
                 modifier = Modifier.weight(1f)
-            ) {
-                Text("Quay lại")
-            }
+            )
 
             SormsButton(
                 onClick = onRequestPermission,
@@ -360,7 +366,7 @@ private fun CaptureStep(
                 .size(280.dp)
                 .aspectRatio(1f),
             colors = CardDefaults.cardColors(
-                containerColor = Color.Black.copy(alpha = 0.1f)
+                containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
             ),
             shape = RoundedCornerShape(20.dp)
         ) {
@@ -486,13 +492,14 @@ private fun CaptureStep(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(
+            SormsButton(
                 onClick = onBack,
-                modifier = Modifier.weight(1f),
-                enabled = !uiState.isCapturing
-            ) {
-                Text("Quay lại")
-            }
+                text = "Quay lại",
+                variant = ButtonVariant.Secondary,
+                isOutlined = true,
+                enabled = !uiState.isCapturing,
+                modifier = Modifier.weight(1f)
+            )
 
             when {
                 isCaptured -> {
@@ -564,12 +571,13 @@ private fun ReviewStep(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(
+            SormsButton(
                 onClick = onBack,
+                text = "Quay lại",
+                variant = ButtonVariant.Secondary,
+                isOutlined = true,
                 modifier = Modifier.weight(1f)
-            ) {
-                Text("Quay lại")
-            }
+            )
 
             SormsButton(
                 onClick = onConfirm,

@@ -1,4 +1,4 @@
-package com.example.sorms_app.presentation.screens.user
+package com.example.sorms_app.presentation.screens.user.bookings
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -41,9 +41,13 @@ fun BookingDetailScreen(
         }
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
         // Top App Bar
         SormsTopAppBar(
             title = "Đặt phòng",
@@ -295,12 +299,13 @@ fun BookingDetailScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        OutlinedButton(
+                        SormsButton(
                             onClick = onNavigateBack,
+                            text = "Quay lại",
+                            variant = ButtonVariant.Secondary,
+                            isOutlined = true,
                             modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Quay lại")
-                        }
+                        )
 
                         SormsButton(
                             onClick = { /* Navigate to face registration */ },
@@ -344,6 +349,7 @@ fun BookingDetailScreen(
                     )
                 }
             }
+        }
         }
     }
 }

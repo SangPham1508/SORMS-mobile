@@ -3,7 +3,7 @@ package com.example.sorms_app.presentation.viewmodel
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.sorms_app.presentation.screens.user.FaceManagementUiState
+import com.example.sorms_app.presentation.screens.user.verification.FaceManagementUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

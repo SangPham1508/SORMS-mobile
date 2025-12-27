@@ -3,6 +3,7 @@ package com.example.sorms_app.di
 import android.content.Context
 import com.example.sorms_app.data.datasource.remote.AuthApiService
 import com.example.sorms_app.data.datasource.remote.BookingApiService
+import com.example.sorms_app.data.datasource.remote.FaceRecognitionApiService
 import com.example.sorms_app.data.datasource.remote.NotificationApiService
 import com.example.sorms_app.data.datasource.remote.OrderApiService
 import com.example.sorms_app.data.datasource.remote.RetrofitClient
@@ -116,4 +117,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideUserApiService(): UserApiService = RetrofitClient.userApiService
+
+    @Provides
+    @Singleton
+    fun provideFaceRecognitionApiService(): FaceRecognitionApiService = RetrofitClient.faceRecognitionApiService
 }

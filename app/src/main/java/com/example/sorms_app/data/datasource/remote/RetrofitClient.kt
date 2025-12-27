@@ -150,4 +150,8 @@ object RetrofitClient {
     val userApiService: UserApiService by lazy {
         retrofit.create(UserApiService::class.java)
     }
+
+    val faceRecognitionApiService: FaceRecognitionApiService by lazy {
+        retrofit.create(FaceRecognitionApiService::class.java)
+    }
 }

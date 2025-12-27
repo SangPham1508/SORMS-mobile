@@ -16,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,11 +34,13 @@ fun ProfileScreen(
     val uiState by userViewModel.uiState.collectAsState()
     var showConfirmLogout by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
         // Top App Bar
         SormsTopAppBar(
             title = "Tài khoản"
@@ -210,17 +211,14 @@ fun ProfileScreen(
             title = { Text("Xác nhận đăng xuất") },
             text = { Text("Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?") },
             confirmButton = {
-                Button(
+                SormsButton(
                     onClick = {
                         showConfirmLogout = false
                         onLogout()
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) { 
-                    Text("Đăng xuất") 
-                }
+                    text = "Đăng xuất",
+                    variant = ButtonVariant.Danger
+                )
             },
             dismissButton = {
                 TextButton(onClick = { showConfirmLogout = false }) { 
@@ -228,6 +226,7 @@ fun ProfileScreen(
                 }
             }
         )
+    }
     }
 }
 

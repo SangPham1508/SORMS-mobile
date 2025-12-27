@@ -1,4 +1,4 @@
-package com.example.sorms_app.presentation.screens.staff
+package com.example.sorms_app.presentation.screens.staff.oders
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,6 +20,7 @@ import com.example.sorms_app.domain.model.ServiceOrder
 import com.example.sorms_app.domain.model.ServiceOrderStatus
 import com.example.sorms_app.presentation.components.*
 import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.theme.SORMS_appTheme
 import com.example.sorms_app.presentation.utils.DateUtils
 import com.example.sorms_app.presentation.utils.FormatUtils
 import com.example.sorms_app.presentation.utils.StatusUtils
@@ -34,12 +36,12 @@ fun StaffOrdersScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedFilter by remember { mutableStateOf("Tất cả") }
-    
+
     // Load data when screen is first composed
     LaunchedEffect(Unit) {
         viewModel.loadOrders()
     }
-    
+
     val filteredOrders = remember(uiState.orders, selectedFilter) {
         when (selectedFilter) {
             "Chờ xác nhận" -> uiState.orders.filter { it.status == ServiceOrderStatus.PENDING }
@@ -50,85 +52,90 @@ fun StaffOrdersScreen(
         }
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        // Top App Bar
-        SormsTopAppBar(
-            title = "Quản lý đơn hàng",
-            onNavigateBack = onNavigateBack,
-            actions = {
-                IconButton(
-                    onClick = {
-                        viewModel.refresh()
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Top App Bar
+            SormsTopAppBar(
+                title = "Quản lý đơn hàng",
+                onNavigateBack = onNavigateBack,
+                actions = {
+                    IconButton(
+                        onClick = {
+                            viewModel.refresh()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Làm mới"
+                        )
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Làm mới"
+                }
+            )
+
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                uiState.errorMessage != null -> {
+                    SormsEmptyState(
+                        title = "Có lỗi xảy ra",
+                        subtitle = uiState.errorMessage!!
                     )
                 }
-            }
-        )
 
-        when {
-            uiState.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+                uiState.orders.isEmpty() -> {
+                    SormsEmptyState(
+                        title = "Không có đơn hàng",
+                        subtitle = "Hiện tại không có đơn hàng nào cần xử lý"
+                    )
                 }
-            }
-            
-            uiState.errorMessage != null -> {
-                SormsEmptyState(
-                    title = "Có lỗi xảy ra",
-                    subtitle = uiState.errorMessage!!
-                )
-            }
-            
-            uiState.orders.isEmpty() -> {
-                SormsEmptyState(
-                    title = "Không có đơn hàng",
-                    subtitle = "Hiện tại không có đơn hàng nào cần xử lý"
-                )
-            }
-            
-            else -> {
-                Box(modifier = Modifier.fillMaxSize()) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Filter Section
-                    item {
-                        FilterSection(
-                            selectedFilter = selectedFilter,
-                            onFilterChanged = { selectedFilter = it }
-                        )
-                    }
-                    
-                    // Order Statistics
-                    item {
-                        OrderStatisticsCard(
-                            totalOrders = uiState.orders.size,
-                            pendingOrders = uiState.orders.count { it.status == ServiceOrderStatus.PENDING },
-                            confirmedOrders = uiState.orders.count { it.status == ServiceOrderStatus.CONFIRMED },
-                            completedOrders = uiState.orders.count { it.status == ServiceOrderStatus.COMPLETED }
-                        )
-                    }
-                    
-                    // Orders List
-                    items(filteredOrders) { order ->
-                        StaffOrderCard(
-                            order = order,
-                            onOrderClick = { onOrderSelected(order) },
-                            onConfirmOrder = { viewModel.confirmOrder(order.id) },
-                            onStartOrder = { viewModel.startOrder(order.id) },
-                            onCompleteOrder = { viewModel.completeOrder(order.id) }
-                        )
+
+                else -> {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            // Filter Section
+                            item {
+                                FilterSection(
+                                    selectedFilter = selectedFilter,
+                                    onFilterChanged = { filter -> selectedFilter = filter }
+                                )
+                            }
+
+                            // Order Statistics
+                            item {
+                                OrderStatisticsCard(
+                                    totalOrders = uiState.orders.size,
+                                    pendingOrders = uiState.orders.count { it.status == ServiceOrderStatus.PENDING },
+                                    confirmedOrders = uiState.orders.count { it.status == ServiceOrderStatus.CONFIRMED },
+                                    completedOrders = uiState.orders.count { it.status == ServiceOrderStatus.COMPLETED }
+                                )
+                            }
+
+                            // Orders List
+                            items(filteredOrders) { order ->
+                                StaffOrderCard(
+                                    order = order,
+                                    onOrderClick = { onOrderSelected(order) },
+                                    onConfirmOrder = { viewModel.confirmOrder(order.id) },
+                                    onStartOrder = { viewModel.startOrder(order.id) },
+                                    onCompleteOrder = { viewModel.completeOrder(order.id) }
+                                )
+                            }
                         }
                     }
                 }
@@ -143,7 +150,7 @@ private fun FilterSection(
     onFilterChanged: (String) -> Unit
 ) {
     val filters = listOf("Tất cả", "Chờ xác nhận", "Đã xác nhận", "Đang thực hiện", "Hoàn thành")
-    
+
     SormsCard {
         Column(
             modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)
@@ -154,9 +161,9 @@ private fun FilterSection(
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -188,9 +195,9 @@ private fun OrderStatisticsCard(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -202,7 +209,7 @@ private fun OrderStatisticsCard(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 StatisticItem(
                     icon = Icons.Default.Schedule,
                     label = "Chờ",
@@ -210,7 +217,7 @@ private fun OrderStatisticsCard(
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 StatisticItem(
                     icon = Icons.Default.PlayArrow,
                     label = "Đang làm",
@@ -218,7 +225,7 @@ private fun OrderStatisticsCard(
                     color = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 StatisticItem(
                     icon = Icons.Default.CheckCircle,
                     label = "Xong",
@@ -249,16 +256,16 @@ private fun StatisticItem(
             modifier = Modifier.size(24.dp),
             tint = color
         )
-        
+
         Spacer(modifier = Modifier.height(4.dp))
-        
+
         Text(
             text = value,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = color
         )
-        
+
         Text(
             text = label,
             fontSize = 12.sp,
@@ -296,22 +303,22 @@ private fun StaffOrderCard(
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    
+
                     Text(
                         text = DateUtils.formatDate(order.createdDate),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
-                
+
                 SormsBadge(
                     text = StatusUtils.getServiceOrderStatusText(order.status.name),
                     tone = StatusUtils.getServiceOrderStatusBadgeTone(order.status.name)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             // Order Details
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -323,14 +330,14 @@ private fun StaffOrderCard(
                     value = "${order.items.size} mục",
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 OrderDetailItem(
                     icon = Icons.Default.AttachMoney,
                     label = "Tổng tiền",
                     value = FormatUtils.formatCurrency(order.totalAmount),
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 OrderDetailItem(
                     icon = Icons.Default.Business,
                     label = "Phòng",
@@ -338,18 +345,20 @@ private fun StaffOrderCard(
                     modifier = Modifier.weight(1f)
                 )
             }
-            
+
             // Services Summary
             if (order.items.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 Text(
-                    text = "Dịch vụ: ${order.items.take(2).joinToString(", ") { it.serviceName }}${if (order.items.size > 2) "..." else ""}",
+                    text = "Dịch vụ: ${
+                        order.items.take(2).joinToString(", ") { it.serviceName }
+                    }${if (order.items.size > 2) "..." else ""}",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
-            
+
             // Notes
             order.note?.let { note ->
                 Spacer(modifier = Modifier.height(8.dp))
@@ -359,9 +368,9 @@ private fun StaffOrderCard(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -373,7 +382,7 @@ private fun StaffOrderCard(
                 ) {
                     Text("Chi tiết")
                 }
-                
+
                 when (order.status) {
                     ServiceOrderStatus.PENDING -> {
                         SormsButton(
@@ -383,7 +392,7 @@ private fun StaffOrderCard(
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    
+
                     ServiceOrderStatus.CONFIRMED -> {
                         SormsButton(
                             onClick = onStartOrder,
@@ -392,7 +401,7 @@ private fun StaffOrderCard(
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    
+
                     ServiceOrderStatus.IN_PROGRESS -> {
                         SormsButton(
                             onClick = onCompleteOrder,
@@ -401,7 +410,7 @@ private fun StaffOrderCard(
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    
+
                     else -> {
                         Spacer(modifier = Modifier.weight(1f))
                     }
@@ -428,20 +437,31 @@ private fun OrderDetailItem(
             modifier = Modifier.size(20.dp),
             tint = MaterialTheme.colorScheme.primary
         )
-        
+
         Spacer(modifier = Modifier.height(4.dp))
-        
+
         Text(
             text = label,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
-        
+
         Text(
             text = value,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Staff Orders Screen")
+@Composable
+private fun StaffOrdersScreenPreview() {
+    SORMS_appTheme {
+        StaffOrdersScreen(
+            onNavigateBack = {},
+            onOrderSelected = {}
         )
     }
 }

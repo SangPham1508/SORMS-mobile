@@ -19,14 +19,15 @@ interface UserApiService {
     @PUT("users/profile")
     suspend fun updateProfile(@Body request: UpdateProfileRequest): Response<ApiResponse<UserProfileResponse>>
 
-    // POST /ai/recognition/face/register - Register face for verification
+    // Note: Face recognition endpoints moved to FaceRecognitionApiService
+    // This endpoint is deprecated, use FaceRecognitionApiService.registerFace() instead
+    @Deprecated("Use FaceRecognitionApiService.registerFace() instead")
     @Multipart
     @POST("ai/recognition/face/register")
     suspend fun registerFace(
-        @Part("userId") userId: RequestBody,
-        @Part("name") name: RequestBody,
-        @Part faceImages: List<MultipartBody.Part>
-    ): Response<ApiResponse<FaceRegistrationResponse>>
+        @Part("student_id") userId: RequestBody,
+        @Part("images") faceImages: List<MultipartBody.Part>
+    ): Response<ApiResponse<com.example.sorms_app.data.datasource.remote.FaceRegistrationResponse>>
 }
 
 // ==================== Request Models ====================
@@ -84,9 +85,6 @@ data class UserProfileResponse(
     @SerializedName("lastModifiedDate") val lastModifiedDate: String?
 )
 
-data class FaceRegistrationResponse(
-    @SerializedName("success") val success: Boolean?,
-    @SerializedName("message") val message: String?,
-    @SerializedName("userId") val userId: String?
-)
+// Note: FaceRegistrationResponse moved to FaceRecognitionApiService.kt
+// Use FaceRecognitionApiService.FaceRegistrationResponse instead
 

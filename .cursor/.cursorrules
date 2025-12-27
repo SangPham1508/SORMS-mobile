@@ -6,7 +6,6 @@ SORMS (Smart Office Room Management System) - Multi-platform application with:
 - Mobile: Android with Jetpack Compose
 - Web: Next.js 15 with React 19
 
-## Kotlin Spring Boot Rules (Backend)
 
 ### Project Structure
 ```

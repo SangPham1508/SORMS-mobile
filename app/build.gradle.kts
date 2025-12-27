@@ -39,12 +39,12 @@ android {
         create("dev") {
             dimension = "env"
             buildConfigField("String", "API_BASE_URL", "\"http://103.81.87.99:5656/api/\"")
-            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"284810550886-hbvn2fvvjdv392iu2hqc6jvtgdovaqmt.apps.googleusercontent.com\"")
+            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"284260188230-9485fh8fqf0dt8pqoth9387it9uf0o76.apps.googleusercontent.com\"")
         }
         create("prod") {
             dimension = "env"
             buildConfigField("String", "API_BASE_URL", "\"https://backend.sorms.online/api/\"")
-            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"284810550886-hbvn2fvvjdv392iu2hqc6jvtgdovaqmt.apps.googleusercontent.com\"")
+            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"284260188230-9485fh8fqf0dt8pqoth9387it9uf0o76.apps.googleusercontent.com\"")
         }
     }
     compileOptions {

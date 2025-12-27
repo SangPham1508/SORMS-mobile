@@ -79,7 +79,8 @@ class OrderRepositoryImpl @Inject constructor(
 
     override suspend fun confirmOrder(orderId: Long): kotlin.Result<ServiceOrder> = withContext(Dispatchers.IO) {
         try {
-            val response = orderApiService.confirmOrder(orderId)
+            val request = ConfirmOrderRequest(orderId = orderId, note = null)
+            val response = orderApiService.confirmOrder(orderId, request)
             if (response.isSuccessful && response.body()?.data != null) {
                 kotlin.Result.success(response.body()!!.data!!.toDomain())
             } else {

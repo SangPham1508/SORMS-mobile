@@ -1,4 +1,4 @@
-package com.example.sorms_app.presentation.screens.user
+package com.example.sorms_app.presentation.screens.user.services
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,12 +11,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sorms_app.domain.model.Service
 import com.example.sorms_app.presentation.components.*
 import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.theme.SORMS_appTheme
 import com.example.sorms_app.presentation.utils.FormatUtils
 import com.example.sorms_app.presentation.viewmodel.CartViewModel
 
@@ -46,8 +48,12 @@ fun CartScreen(
         }
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
     ) {
         // Top App Bar
         SormsTopAppBar(
@@ -187,6 +193,7 @@ fun CartScreen(
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
+                        }
                     }
                 }
             }
@@ -316,6 +323,17 @@ private fun CartItemCard(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Cart Screen")
+@Composable
+private fun CartScreenPreview() {
+    SORMS_appTheme {
+        CartScreen(
+            onNavigateBack = {},
+            onCheckoutSuccess = {}
+        )
     }
 }
 
