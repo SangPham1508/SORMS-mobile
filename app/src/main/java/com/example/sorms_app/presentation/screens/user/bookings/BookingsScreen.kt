@@ -16,7 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sorms_app.domain.model.Booking
-import com.example.sorms_app.presentation.utils.DateUtils
 import java.util.Calendar
 import java.util.Date
 import com.example.sorms_app.presentation.components.BadgeTone
@@ -24,8 +23,10 @@ import com.example.sorms_app.presentation.components.SormsBadge
 import com.example.sorms_app.presentation.components.SormsCard
 import com.example.sorms_app.presentation.components.SormsEmptyState
 import com.example.sorms_app.presentation.components.SormsLoading
+import com.example.sorms_app.presentation.components.QRCodeModal
 import com.example.sorms_app.presentation.components.SormsTopAppBar
 import com.example.sorms_app.presentation.theme.DesignSystem
+import com.example.sorms_app.presentation.utils.DateUtils
 import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.BookingViewModel
 
@@ -40,6 +41,8 @@ fun BookingsScreen(
     var selectedBooking by remember { mutableStateOf<Booking?>(null) }
     var showCancelDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
+    var showQRCodeModal by remember { mutableStateOf(false) }
+    var qrBooking by remember { mutableStateOf<Booking?>(null) }
 
     // Handle cancel success/error
     LaunchedEffect(uiState.cancelSuccess) {
@@ -96,6 +99,10 @@ fun BookingsScreen(
                     onCancelClick = { booking ->
                         selectedBooking = booking
                         showCancelDialog = true
+                    },
+                    onViewQRClick = { booking ->
+                        qrBooking = booking
+                        showQRCodeModal = true
                     },
                     onViewOrderClick = { booking ->
                         onNavigateToOrders(booking.id)
@@ -167,6 +174,19 @@ fun BookingsScreen(
                 }
             )
         }
+
+        // QR Code Modal
+        QRCodeModal(
+            open = showQRCodeModal,
+            onClose = {
+                showQRCodeModal = false
+                qrBooking = null
+            },
+            qrImageUrl = qrBooking?.qrImageUrl,
+            bookingCode = qrBooking?.code,
+            checkInDate = qrBooking?.checkInDate?.let { DateUtils.formatDateShort(it) },
+            checkOutDate = qrBooking?.checkOutDate?.let { DateUtils.formatDateShort(it) }
+        )
     }
 }
 
@@ -334,19 +354,21 @@ private fun BookingList(
     onEditClick: (Booking) -> Unit,
     onCancelClick: (Booking) -> Unit,
     onViewOrderClick: (Booking) -> Unit,
+    onViewQRClick: (Booking) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)  // Sử dụng DesignSystem spacing
     ) {
         items(bookings) { booking ->
             BookingCard(
                 booking = booking,
                 onEditClick = { onEditClick(booking) },
                 onCancelClick = { onCancelClick(booking) },
-                onViewOrderClick = { onViewOrderClick(booking) }
+                onViewOrderClick = { onViewOrderClick(booking) },
+                onViewQRClick = { onViewQRClick(booking) }
             )
         }
     }
@@ -357,12 +379,14 @@ private fun BookingCard(
     booking: Booking,
     onEditClick: () -> Unit,
     onCancelClick: () -> Unit,
-    onViewOrderClick: () -> Unit
+    onViewOrderClick: () -> Unit,
+    onViewQRClick: () -> Unit
 ) {
     val statusUpper = booking.status.uppercase()
     val canEdit = statusUpper == "PENDING"
     val canCancel = statusUpper == "PENDING"
     val hasOrder = statusUpper in listOf("APPROVED", "CHECKED_IN", "CHECKED_OUT")
+    val canViewQR = (statusUpper == "APPROVED" || statusUpper == "CHECKED_IN") && !booking.qrImageUrl.isNullOrBlank()
 
     SormsCard {
         Column(modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)) {
@@ -391,9 +415,9 @@ private fun BookingCard(
                 )
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
             Divider()
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
             // Room info
             Row(
@@ -425,7 +449,7 @@ private fun BookingCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
             // Dates
             Row(
@@ -445,7 +469,7 @@ private fun BookingCard(
                             modifier = Modifier.size(16.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(Modifier.width(4.dp))
+                        Spacer(Modifier.width(DesignSystem.Spacing.xs))
                         Text(
                             text = booking.checkInDate?.let { DateUtils.formatDate(it) } ?: "N/A",
                             style = MaterialTheme.typography.bodyMedium
@@ -465,7 +489,7 @@ private fun BookingCard(
                             modifier = Modifier.size(16.dp),
                             tint = MaterialTheme.colorScheme.error
                         )
-                        Spacer(Modifier.width(4.dp))
+                        Spacer(Modifier.width(DesignSystem.Spacing.xs))
                         Text(
                             text = booking.checkOutDate?.let { DateUtils.formatDate(it) } ?: "N/A",
                             style = MaterialTheme.typography.bodyMedium
@@ -486,7 +510,7 @@ private fun BookingCard(
 
             // Status message for PENDING
             if (statusUpper == "PENDING") {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
@@ -513,12 +537,27 @@ private fun BookingCard(
             }
 
             // Action buttons
-            if (canEdit || canCancel || hasOrder) {
+            if (canEdit || canCancel || hasOrder || canViewQR) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    if (canViewQR) {
+                        OutlinedButton(
+                            onClick = onViewQRClick,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                Icons.Default.QrCode,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(DesignSystem.Spacing.xs))
+                            Text("Xem QR")
+                        }
+                    }
+                    
                     if (canEdit) {
                         OutlinedButton(
                             onClick = onEditClick,
@@ -529,7 +568,7 @@ private fun BookingCard(
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
-                            Spacer(Modifier.width(4.dp))
+                            Spacer(Modifier.width(DesignSystem.Spacing.xs))
                             Text("Sửa")
                         }
                     }
@@ -544,7 +583,7 @@ private fun BookingCard(
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
-                            Spacer(Modifier.width(4.dp))
+                            Spacer(Modifier.width(DesignSystem.Spacing.xs))
                             Text("Xem hóa đơn")
                         }
                     }
@@ -563,7 +602,7 @@ private fun BookingCard(
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
-                            Spacer(Modifier.width(4.dp))
+                            Spacer(Modifier.width(DesignSystem.Spacing.xs))
                             Text("Hủy")
                         }
                     }

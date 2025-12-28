@@ -16,52 +16,54 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+// Dark Color Scheme - Tối ưu cho dark mode với contrast tốt và màu sắc phù hợp
 private val DarkColorScheme = darkColorScheme(
-    primary = Blue400,
-    onPrimary = Color.White,
-    primaryContainer = Blue800,
-    onPrimaryContainer = Blue100,
-    secondary = Gray600,
+    primary = Blue300,  // Sáng hơn cho dark mode (#80B3FF)
+    onPrimary = Color(0xFF00364C),  // Dark blue text trên primary
+    primaryContainer = Blue800.copy(alpha = 0.4f),  // Dark blue container với alpha
+    onPrimaryContainer = Blue100,  // Light blue text
+    secondary = Gray400,  // Medium gray
     onSecondary = Color.White,
-    secondaryContainer = Gray800,
-    onSecondaryContainer = Gray100,
-    tertiary = Blue300,
-    onTertiary = Blue900,
-    background = Gray900,
-    onBackground = Gray100,
-    surface = Gray800,
-    onSurface = Gray100,
-    surfaceVariant = Gray700,
-    onSurfaceVariant = Gray300,
-    outline = Gray600,
+    secondaryContainer = Gray700,  // Darker gray container
+    onSecondaryContainer = Gray100,  // Light gray text
+    tertiary = Blue400,  // Medium blue
+    onTertiary = Color.White,
+    background = Color(0xFF121212),  // Material Dark background
+    onBackground = Color(0xFFE0E0E0),  // Light gray text
+    surface = Color(0xFF1E1E1E),  // Dark surface (slightly lighter than background)
+    onSurface = Color(0xFFE0E0E0),  // Light gray text
+    surfaceVariant = Color(0xFF2C2C2C),  // Lighter dark for cards
+    onSurfaceVariant = Gray300,  // Medium gray text
+    outline = Gray600,  // Border color
     error = Red500,
     onError = Color.White,
-    errorContainer = Red800,
+    errorContainer = Red800.copy(alpha = 0.3f),  // Dark red container
     onErrorContainer = Red100
 )
 
+// Light Color Scheme - Tối ưu cho light mode với màu sắc nhẹ nhàng và contrast tốt
 private val LightColorScheme = lightColorScheme(
     primary = Blue600,  // #0085B8 - matches web hsl(200 98% 35%)
     onPrimary = Color.White,
-    primaryContainer = Blue100,  // Light blue background for containers
-    onPrimaryContainer = Blue900,
-    secondary = Gray600,
+    primaryContainer = Blue100,  // Light blue background for containers (#D6E4FF)
+    onPrimaryContainer = Blue900,  // Dark blue text on primary container
+    secondary = Gray600,  // Medium gray
     onSecondary = Color.White,
-    secondaryContainer = Gray100,
-    onSecondaryContainer = Gray900,
-    tertiary = Blue700,
+    secondaryContainer = Gray100,  // Light gray container
+    onSecondaryContainer = Gray900,  // Dark gray text
+    tertiary = Blue700,  // Darker blue
     onTertiary = Color.White,
-    background = Color.White,
-    onBackground = Gray900,
-    surface = Color.White,
-    onSurface = Gray900,
-    surfaceVariant = Gray50,  // Light gray for card backgrounds
-    onSurfaceVariant = Gray700,
+    background = Color(0xFFFAFAFA),  // Slightly off-white background
+    onBackground = Gray900,  // Dark gray text
+    surface = Color.White,  // Pure white surface
+    onSurface = Gray900,  // Dark gray text
+    surfaceVariant = Gray50,  // Very light gray for card backgrounds (#F9FAFB)
+    onSurfaceVariant = Gray700,  // Medium gray text
     outline = Gray200,  // Border color matching web (border-gray-200)
     error = Red500,
     onError = Color.White,
-    errorContainer = Red100,
-    onErrorContainer = Red800
+    errorContainer = Red100,  // Light red container
+    onErrorContainer = Red800  // Dark red text
 )
 
 @Composable
@@ -85,8 +87,14 @@ fun SORMS_appTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            // Status bar color phù hợp với theme
+            window.statusBarColor = if (darkTheme) {
+                colorScheme.surface.toArgb()  // Dark surface cho dark mode
+            } else {
+                colorScheme.primary.toArgb()  // Primary color cho light mode
+            }
+            // Light status bar icons cho dark mode, dark icons cho light mode
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 

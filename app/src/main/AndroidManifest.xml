@@ -5,7 +5,11 @@
     <!-- Internet permission for API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
     
-    <!-- Camera permission for face recognition -->
+    <!-- Network state permission to check connectivity -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    
+    <!-- Camera permission for face recognition and QR scanning -->
     <uses-permission android:name="android.permission.CAMERA" />
     
     <!-- Media permissions for Android 13+ (API 33+) -->
@@ -15,9 +19,16 @@
     <uses-permission 
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+    <!-- WRITE_EXTERNAL_STORAGE only needed for Android 10 and below (API 29) -->
     <uses-permission 
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
+        android:maxSdkVersion="29" />
+    
+    <!-- Notifications permission for Android 13+ (API 33+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- Vibration permission (optional, for notifications) -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     
     <!-- Camera hardware feature (optional) -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />

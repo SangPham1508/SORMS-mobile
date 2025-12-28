@@ -1,30 +1,14 @@
 package com.example.sorms_app.presentation.screens.user.rooms
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.People
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -34,32 +18,63 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.runtime.getValue
 import com.example.sorms_app.data.models.RoomData
-import com.example.sorms_app.presentation.components.ButtonVariant
-import com.example.sorms_app.presentation.components.SormsBadge
-import com.example.sorms_app.presentation.components.SormsButton
-import com.example.sorms_app.presentation.components.SormsCard
-import com.example.sorms_app.presentation.components.SormsEmptyState
-import com.example.sorms_app.presentation.components.SormsTopAppBar
+import com.example.sorms_app.presentation.components.*
 import com.example.sorms_app.presentation.theme.DesignSystem
 import com.example.sorms_app.presentation.theme.SORMS_appTheme
 import com.example.sorms_app.presentation.utils.StatusUtils
 import com.example.sorms_app.presentation.viewmodel.RoomViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoomsScreen(
     onNavigateBack: () -> Unit,
-    onRoomSelected: (RoomData) -> Unit,
+    onNavigateToFaceRegister: () -> Unit,
+    onBookingSuccess: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RoomViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         viewModel.loadRooms()
     }
+
+    // Show booking modal
+    MultiStepBookingModal(
+        room = uiState.selectedRoomForBooking,
+        isOpen = uiState.isBookingModalOpen,
+        onDismiss = viewModel::closeBookingModal,
+        onBookingSuccess = {
+            viewModel.closeBookingModal()
+            onBookingSuccess()
+        },
+        onFaceRegisterClick = onNavigateToFaceRegister,
+        checkFaceStatus = {
+            coroutineScope.launch {
+                viewModel.checkFaceStatus()
+            }.join()
+            // This is a simplified way; ideally, the result should be passed back.
+            // For now, assume the ViewModel handles the state.
+            viewModel.checkFaceStatus() // Return the result
+        },
+        createBooking = { roomId, checkInDate, checkInTime, checkOutDate, checkOutTime, numGuests, note ->
+            coroutineScope.launch {
+                viewModel.createBooking(
+                    roomId,
+                    checkInDate,
+                    checkInTime,
+                    checkOutDate,
+                    checkOutTime,
+                    numGuests,
+                    note
+                )
+            }.join()
+            viewModel.createBooking(roomId, checkInDate, checkInTime, checkOutDate, checkOutTime, numGuests, note)
+        }
+    )
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -112,7 +127,7 @@ fun RoomsScreen(
                             items(items = uiState.filteredRooms) { room ->
                                 RoomCard(
                                     room = room,
-                                    onRoomClick = { onRoomSelected(room) }
+                                    onRoomClick = { viewModel.openBookingModal(room) }
                                 )
                             }
                         }
@@ -139,9 +154,9 @@ private fun FilterSection(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.elementSpacing)) {  // Tăng spacing
                 filters.forEach { filter ->
                     FilterChip(
                         selected = selectedFilter == filter,
@@ -164,7 +179,7 @@ private fun RoomCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(DesignSystem.Spacing.cardContentPadding)  // Sử dụng DesignSystem spacing
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -179,10 +194,12 @@ private fun RoomCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
+                    Spacer(modifier = Modifier.height(DesignSystem.Spacing.xs))
+                    
                     Text(
                         text = room.code ?: "R-${room.id}",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)  // Tăng contrast
                     )
                 }
 
@@ -192,11 +209,11 @@ private fun RoomCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)  // Sử dụng DesignSystem spacing
             ) {
                 RoomDetailItem(
                     icon = Icons.Default.Business,
@@ -231,7 +248,7 @@ private fun RoomCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.md))  // Sử dụng DesignSystem spacing
 
             SormsButton(
                 onClick = onRoomClick,
@@ -285,7 +302,8 @@ private fun RoomsScreenPreview() {
     SORMS_appTheme {
         RoomsScreen(
             onNavigateBack = {},
-            onRoomSelected = {}
+            onNavigateToFaceRegister = {},
+            onBookingSuccess = {}
         )
     }
 }

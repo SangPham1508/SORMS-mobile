@@ -67,21 +67,37 @@ class BookingViewModel @Inject constructor(
                     return@launch
                 }
                 
-                // Format dates for API
-                val checkInDateTime = "$checkInDate $checkInTime:00"
-                val checkOutDateTime = "$checkInDate $checkOutTime:00"
+                // Format dates for API - đồng bộ với web: YYYY-MM-DDTHH:mm:ss
+                val checkInDateTime = "${checkInDate}T${checkInTime}:00"
+                val checkOutDateTime = "${checkInDate}T${checkOutTime}:00"
                 
-                // Call repository to create booking
-                // Note: This would need to be implemented in BookingRepository
-                // For now, simulate success after delay
-                kotlinx.coroutines.delay(2000)
+                // Call repository to create booking - đã implement thực sự
+                val result = bookingRepository.createBooking(
+                    roomId = roomId,
+                    checkinDate = checkInDateTime,
+                    checkoutDate = checkOutDateTime,
+                    numGuests = guestCount,
+                    note = specialRequests.takeIf { it.isNotBlank() }
+                )
                 
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false, 
-                        bookingSuccess = true
-                    ) 
-                }
+                result.fold(
+                    onSuccess = { booking ->
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false, 
+                                bookingSuccess = true
+                            ) 
+                        }
+                    },
+                    onFailure = { error ->
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false, 
+                                errorMessage = error.message ?: "Không thể tạo booking"
+                            ) 
+                        }
+                    }
+                )
             } catch (e: Exception) {
                 _uiState.update { 
                     it.copy(
@@ -129,18 +145,28 @@ class BookingViewModel @Inject constructor(
             }
             
             try {
-                // TODO: Implement actual booking cancellation
-                kotlinx.coroutines.delay(1000)
+                // Call repository to cancel booking - đã implement thực sự
+                val result = bookingRepository.cancelBooking(bookingId)
                 
-                // Remove booking from local list
-                val updatedBookings = _uiState.value.bookings.filter { it.id != bookingId }
-                
-                _uiState.update { 
-                    it.copy(
-                        bookings = updatedBookings,
-                        cancelSuccess = true
-                    ) 
-                }
+                result.fold(
+                    onSuccess = {
+                        // Remove booking from local list
+                        val updatedBookings = _uiState.value.bookings.filter { it.id != bookingId }
+                        _uiState.update { 
+                            it.copy(
+                                bookings = updatedBookings,
+                                cancelSuccess = true
+                            ) 
+                        }
+                    },
+                    onFailure = { error ->
+                        _uiState.update { 
+                            it.copy(
+                                cancelError = error.message ?: "Không thể hủy booking"
+                            ) 
+                        }
+                    }
+                )
             } catch (e: Exception) {
                 _uiState.update { 
                     it.copy(
@@ -162,31 +188,42 @@ class BookingViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             
             try {
-                // TODO: Implement actual booking update
-                kotlinx.coroutines.delay(1000)
+                // Format dates for API - đồng bộ với web: YYYY-MM-DDTHH:mm:ss
+                val isoFormatter = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+                val checkinDateStr = isoFormatter.format(checkInDate)
+                val checkoutDateStr = isoFormatter.format(checkOutDate)
                 
-                // Update booking in local list
-                val updatedBookings = _uiState.value.bookings.map { booking ->
-                    if (booking.id == bookingId) {
-                        booking.copy(
-                            checkInDate = checkInDate,
-                            checkOutDate = checkOutDate,
-                            numberOfGuests = numGuests,
-                            numGuests = numGuests,
-                            notes = note,
-                            note = note
-                        )
-                    } else {
-                        booking
+                // Call repository to update booking - đã implement thực sự
+                val result = bookingRepository.updateBooking(
+                    bookingId = bookingId,
+                    checkinDate = checkinDateStr,
+                    checkoutDate = checkoutDateStr,
+                    numGuests = numGuests,
+                    note = note
+                )
+                
+                result.fold(
+                    onSuccess = { updatedBooking ->
+                        // Update booking in local list
+                        val updatedBookings = _uiState.value.bookings.map { booking ->
+                            if (booking.id == bookingId) updatedBooking else booking
+                        }
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false,
+                                bookings = updatedBookings
+                            ) 
+                        }
+                    },
+                    onFailure = { error ->
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false, 
+                                errorMessage = error.message ?: "Không thể cập nhật booking"
+                            ) 
+                        }
                     }
-                }
-                
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false,
-                        bookings = updatedBookings
-                    ) 
-                }
+                )
             } catch (e: Exception) {
                 _uiState.update { 
                     it.copy(

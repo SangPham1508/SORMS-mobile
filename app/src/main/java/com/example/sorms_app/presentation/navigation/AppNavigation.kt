@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.sorms_app.data.utils.RoleUtils
 import com.example.sorms_app.presentation.screens.LoginScreen
 import com.example.sorms_app.presentation.viewmodel.AuthUiState
 import com.example.sorms_app.presentation.viewmodel.AuthViewModel
@@ -71,10 +72,13 @@ fun AppNavigation(
                 // Stay on splash screen while checking
             }
             is AuthUiState.Success -> {
-                val destination = if (state.roles.any { it.equals("STAFF", ignoreCase = true) }) {
-                    Routes.STAFF_MAIN
-                } else {
-                    Routes.USER_MAIN
+                // Đồng bộ với web: sử dụng RoleUtils để map role
+                val primaryRole = state.roles.firstOrNull()?.let { RoleUtils.mapRoleToAppRole(it) }
+                val destination = when (primaryRole) {
+                    com.example.sorms_app.data.utils.AppRole.STAFF -> Routes.STAFF_MAIN
+                    com.example.sorms_app.data.utils.AppRole.ADMIN, 
+                    com.example.sorms_app.data.utils.AppRole.OFFICE -> Routes.STAFF_MAIN  // Admin và Office dùng staff flow
+                    else -> Routes.USER_MAIN
                 }
                 navController.navigate(destination) {
                     popUpTo(0) { inclusive = true }

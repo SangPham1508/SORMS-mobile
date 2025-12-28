@@ -165,10 +165,10 @@ private fun FilterSection(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.elementSpacing)  // Tăng spacing
             ) {
                 items(filters) { filter ->
                     FilterChip(

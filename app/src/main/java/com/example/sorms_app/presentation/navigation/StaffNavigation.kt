@@ -100,7 +100,10 @@ fun StaffBottomBar(
     currentRoute: String?,
     onNavigate: (String) -> Unit
 ) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface,  // Đồng bộ với design system - màu trắng/nền
+        contentColor = MaterialTheme.colorScheme.onSurface  // Đồng bộ màu text/icon
+    ) {
         StaffTab.values().forEach { tab ->
             NavigationBarItem(
                 selected = currentRoute == tab.route,
@@ -111,7 +114,14 @@ fun StaffBottomBar(
                         contentDescription = tab.label
                     )
                 },
-                label = { Text(tab.label) }
+                label = { Text(tab.label) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,  // Màu primary khi selected
+                    selectedTextColor = MaterialTheme.colorScheme.primary,  // Màu primary khi selected
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),  // Indicator màu nhẹ
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),  // Màu nhẹ khi unselected
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)  // Màu nhẹ khi unselected
+                )
             )
         }
     }

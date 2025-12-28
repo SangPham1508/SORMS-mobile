@@ -144,7 +144,7 @@ private fun FilterSection(
     val filters = listOf("Tất cả", "Hoàn thành", "Đã hủy", "Đang diễn ra")
 
     SormsCard {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)) {  // Sử dụng DesignSystem spacing
             Text(
                 text = "Lọc theo trạng thái",
                 fontSize = 16.sp,
@@ -152,9 +152,9 @@ private fun FilterSection(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.elementSpacing)) {  // Tăng spacing
                 items(filters) { filter ->
                     FilterChip(
                         selected = selectedFilter == filter,
@@ -174,18 +174,18 @@ private fun StatisticsCard(
     cancelledBookings: Int
 ) {
     SormsCard {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)) {  // Sử dụng DesignSystem spacing
             Text(
                 text = "Thống kê",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.md))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)  // Sử dụng DesignSystem spacing
             ) {
                 StatisticItem(
                     icon = Icons.Default.Hotel,
@@ -260,7 +260,7 @@ private fun HistoryBookingCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(DesignSystem.Spacing.cardContentPadding)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -288,11 +288,11 @@ private fun HistoryBookingCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
             ) {
                 BookingDetailItem(
                     icon = Icons.Default.DateRange,
@@ -318,7 +318,7 @@ private fun HistoryBookingCard(
 
             booking.notes?.let { requests ->
                 if (requests.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
                     Text(
                         text = "Yêu cầu đặc biệt: $requests",
                         fontSize = 14.sp,
@@ -327,7 +327,7 @@ private fun HistoryBookingCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.md))
 
             SormsButton(
                 onClick = onBookingClick,

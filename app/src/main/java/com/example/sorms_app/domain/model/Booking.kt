@@ -14,7 +14,8 @@ data class Booking(
     val numberOfGuests: Int = 1,  // Match HistoryScreen expectation
     val numGuests: Int = 1,       // Keep for backward compatibility
     val notes: String? = null,    // Match HistoryScreen expectation
-    val note: String? = null      // Keep for backward compatibility
+    val note: String? = null,     // Keep for backward compatibility
+    val qrImageUrl: String? = null  // QR code image URL for check-in (đồng bộ với web)
 ) {
     // Helper property to get string ID for backward compatibility
     val stringId: String get() = id.toString()

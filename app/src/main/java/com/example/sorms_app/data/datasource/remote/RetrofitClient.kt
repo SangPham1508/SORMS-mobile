@@ -34,19 +34,32 @@ object RetrofitClient {
 
     private val authInterceptor = Interceptor { chain ->
         val original = chain.request()
-        
-        // Skip auth for login/refresh endpoints
         val url = original.url.toString()
-        if (url.contains("/auth/mobile/outbound/authentication") || 
-            url.contains("/auth/refresh")) {
+        
+        // Skip auth for login/refresh endpoints only
+        val isAuthEndpoint = url.contains("/auth/outbound/authentication") || 
+                            url.contains("/auth/refresh")
+        
+        if (isAuthEndpoint) {
+            // Không cần token cho login/refresh
             return@Interceptor chain.proceed(original)
         }
 
+        // Tất cả các endpoint khác đều cần token
         val builder = original.newBuilder()
             .addHeader("Accept", "application/json")
 
-        tokenProvider?.invoke()?.takeIf { it.isNotBlank() }?.let { token ->
+        // Luôn lấy token mới từ AuthSession (không cache)
+        val token = tokenProvider?.invoke()?.takeIf { it.isNotBlank() }
+        
+        if (token != null) {
+            // Token có sẵn, thêm vào header
             builder.addHeader("Authorization", "Bearer $token")
+            android.util.Log.d("RetrofitClient", "✓ Added Authorization header for ${original.method} ${original.url}")
+        } else {
+            // Token không có - đây là lỗi nghiêm trọng cho các endpoint cần auth
+            android.util.Log.e("RetrofitClient", "✗ NO TOKEN available for ${original.method} ${original.url} - Request will likely fail with 401/500")
+            android.util.Log.e("RetrofitClient", "AuthSession.currentToken: ${AuthSession.currentToken?.take(20) ?: "null"}...")
         }
 
         val response = chain.proceed(builder.build())
@@ -65,12 +78,17 @@ object RetrofitClient {
                     
                     if (refreshResult is com.example.sorms_app.data.repository.AuthResult.Success) {
                         // Retry original request with new token
-                        val newToken = tokenProvider?.invoke()
-                        val newRequest = original.newBuilder()
-                            .header("Accept", "application/json")
-                            .header("Authorization", "Bearer $newToken")
-                            .build()
-                        return@Interceptor chain.proceed(newRequest)
+                        val newToken = tokenProvider?.invoke()?.takeIf { it.isNotBlank() }
+                        if (newToken != null) {
+                            android.util.Log.d("RetrofitClient", "Retrying request with refreshed token")
+                            val newRequest = original.newBuilder()
+                                .header("Accept", "application/json")
+                                .header("Authorization", "Bearer $newToken")
+                                .build()
+                            return@Interceptor chain.proceed(newRequest)
+                        } else {
+                            android.util.Log.e("RetrofitClient", "Token refresh succeeded but new token is null/empty")
+                        }
                     } else {
                         // Refresh failed, clear session
                         runBlocking {
@@ -153,5 +171,9 @@ object RetrofitClient {
 
     val faceRecognitionApiService: FaceRecognitionApiService by lazy {
         retrofit.create(FaceRecognitionApiService::class.java)
+    }
+
+    val staffProfileApiService: StaffProfileApiService by lazy {
+        retrofit.create(StaffProfileApiService::class.java)
     }
 }

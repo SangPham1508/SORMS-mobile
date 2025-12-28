@@ -3,6 +3,8 @@ package com.example.sorms_app.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sorms_app.data.datasource.local.AuthSession
+import com.example.sorms_app.data.datasource.remote.FaceRecognitionApiService
+import com.example.sorms_app.data.datasource.remote.RetrofitClient
 import com.example.sorms_app.domain.model.Booking
 import com.example.sorms_app.domain.model.Notification
 import com.example.sorms_app.domain.repository.BookingRepository
@@ -21,10 +23,14 @@ data class UserDashboardUiState(
     val isLoading: Boolean = false,
     val userName: String = "Người dùng",
     val currentBooking: Booking? = null,
+    val activeBookings: List<Booking> = emptyList(),  // Đồng bộ với web: thêm active bookings list
+    val pendingBookings: List<Booking> = emptyList(),  // Đồng bộ với web: thêm pending bookings list
     val notifications: List<Notification> = emptyList(),
     val activeBookingsCount: Int = 0,
+    val pendingBookingsCount: Int = 0,  // Đồng bộ với web: thêm pending count
     val serviceOrdersCount: Int = 0,
     val unpaidOrdersCount: Int = 0,
+    val faceRegistrationStatus: Boolean? = null,  // Đồng bộ với web: thêm face registration status
     val errorMessage: String? = null
 )
 
@@ -70,9 +76,35 @@ class UserDashboardViewModel @Inject constructor(
                     emptyList()
                 }
                 
-                val activeBookingsCount = allBookings.count { booking ->
+                val activeBookings = allBookings.filter { booking ->
                     booking.status.equals("CHECKED_IN", ignoreCase = true) || 
                     booking.status.equals("APPROVED", ignoreCase = true)
+                }.sortedByDescending { booking ->
+                    // Sort by checkInDate descending (newest first) - đồng bộ với web
+                    booking.checkInDate?.time ?: 0L
+                }
+                val activeBookingsCount = activeBookings.size
+                
+                // Load pending bookings (đồng bộ với web)
+                val pendingBookings = allBookings.filter { booking ->
+                    booking.status.equals("PENDING", ignoreCase = true)
+                }.sortedByDescending { booking ->
+                    // Sort by checkInDate descending (newest first) - đồng bộ với web
+                    booking.checkInDate?.time ?: 0L
+                }
+                val pendingBookingsCount = pendingBookings.size
+                
+                // Load face registration status (đồng bộ với web)
+                val faceRegistrationStatus = try {
+                    val userId = AuthSession.accountId ?: "0"
+                    val response = RetrofitClient.faceRecognitionApiService.getFaceStatus(userId)
+                    if (response.isSuccessful) {
+                        response.body()?.data?.registered ?: false
+                    } else {
+                        null
+                    }
+                } catch (e: Exception) {
+                    null
                 }
                 
                 // Load notifications
@@ -101,10 +133,14 @@ class UserDashboardViewModel @Inject constructor(
                     isLoading = false,
                     userName = userName,
                     currentBooking = currentBooking,
+                    activeBookings = activeBookings,  // Đồng bộ với web: thêm active bookings list
+                    pendingBookings = pendingBookings,  // Đồng bộ với web: thêm pending bookings list
                     notifications = notifications,
                     activeBookingsCount = activeBookingsCount,
+                    pendingBookingsCount = pendingBookingsCount,  // Đồng bộ với web: thêm pending count
                     serviceOrdersCount = serviceOrdersCount,
                     unpaidOrdersCount = unpaidOrdersCount,
+                    faceRegistrationStatus = faceRegistrationStatus,  // Đồng bộ với web: thêm face status
                     errorMessage = null
                 )
                 

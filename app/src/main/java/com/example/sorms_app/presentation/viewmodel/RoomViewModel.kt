@@ -2,8 +2,10 @@ package com.example.sorms_app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sorms_app.data.datasource.local.AuthSession
+import com.example.sorms_app.data.datasource.remote.FaceRecognitionApiService
 import com.example.sorms_app.data.models.RoomData
-import com.example.sorms_app.data.repository.Result
+import com.example.sorms_app.domain.repository.BookingRepository
 import com.example.sorms_app.data.repository.RoomRepository
 import com.example.sorms_app.data.repository.RoomTypeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +24,9 @@ data class RoomUiState(
     val filteredRooms: List<RoomData> = emptyList(),
     val selectedFilter: String = "Tất cả",
     val errorMessage: String? = null,
-    val selectedRoomNumber: String? = null,
+    // Modal state
+    val isBookingModalOpen: Boolean = false,
+    val selectedRoomForBooking: RoomData? = null,
     // Filters
     val roomTypes: List<com.example.sorms_app.data.models.RoomTypeResponse> = emptyList(),
     val selectedRoomTypeId: Long? = null
@@ -33,8 +37,10 @@ data class RoomUiState(
  */
 @HiltViewModel
 class RoomViewModel @Inject constructor(
-    private val repository: RoomRepository,
-    private val roomTypeRepository: RoomTypeRepository
+    private val roomRepository: RoomRepository,
+    private val roomTypeRepository: RoomTypeRepository,
+    private val bookingRepository: BookingRepository,
+    private val faceRecognitionApiService: FaceRecognitionApiService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RoomUiState())
@@ -49,11 +55,13 @@ class RoomViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             
             // Load room types (ignore errors)
-            when (val types = roomTypeRepository.getAll()) {
-                is com.example.sorms_app.data.repository.RoomTypeResult.Success -> {
-                    _uiState.value = _uiState.value.copy(roomTypes = types.data)
+            try {
+                val typesResult = roomTypeRepository.getAll()
+                if (typesResult is com.example.sorms_app.data.repository.RoomTypeResult.Success) {
+                    _uiState.value = _uiState.value.copy(roomTypes = typesResult.data)
                 }
-                else -> { /* ignore */ }
+            } catch (_: Exception) {
+                // ignore
             }
             loadRooms()
         }
@@ -66,8 +74,8 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
-            when (val result = repository.getAllRooms()) {
-                is Result.Success -> {
+            when (val result = roomRepository.getAllRooms()) {
+                is com.example.sorms_app.data.repository.Result.Success -> {
                     val allRooms = result.data
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -76,13 +84,13 @@ class RoomViewModel @Inject constructor(
                         errorMessage = null
                     )
                 }
-                is Result.Error -> {
+                is com.example.sorms_app.data.repository.Result.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = result.message
                     )
                 }
-                is Result.Loading -> {
+                is com.example.sorms_app.data.repository.Result.Loading -> {
                     _uiState.value = _uiState.value.copy(isLoading = true)
                 }
             }
@@ -119,8 +127,8 @@ class RoomViewModel @Inject constructor(
                 loadRooms()
                 return@launch
             }
-            when (val result = repository.getRoomsByType(roomTypeId)) {
-                is Result.Success -> {
+            when (val result = roomRepository.getRoomsByType(roomTypeId)) {
+                is com.example.sorms_app.data.repository.Result.Success -> {
                     val rooms = result.data
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -129,27 +137,67 @@ class RoomViewModel @Inject constructor(
                         errorMessage = null
                     )
                 }
-                is Result.Error -> {
+                is com.example.sorms_app.data.repository.Result.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = result.message
                     )
                 }
-                is Result.Loading -> {
+                is com.example.sorms_app.data.repository.Result.Loading -> {
                     _uiState.value = _uiState.value.copy(isLoading = true)
                 }
             }
         }
     }
 
-    /**
-     * Chọn/bỏ chọn phòng
-     */
-    fun selectRoom(roomNumber: String?) {
-        val currentSelected = _uiState.value.selectedRoomNumber
+    // --- Booking Modal Functions ---
+
+    fun openBookingModal(room: RoomData) {
         _uiState.value = _uiState.value.copy(
-            selectedRoomNumber = if (currentSelected == roomNumber) null else roomNumber
+            isBookingModalOpen = true,
+            selectedRoomForBooking = room
         )
+    }
+
+    fun closeBookingModal() {
+        _uiState.value = _uiState.value.copy(
+            isBookingModalOpen = false,
+            selectedRoomForBooking = null
+        )
+    }
+
+    suspend fun checkFaceStatus(): kotlin.Result<Boolean> {
+        return try {
+            val userId = AuthSession.accountId ?: return kotlin.Result.failure(Exception("User not logged in"))
+            val response = faceRecognitionApiService.getFaceStatus(userId)
+            if (response.isSuccessful) {
+                kotlin.Result.success(response.body()?.data?.registered ?: false)
+            } else {
+                kotlin.Result.failure(Exception("API Error: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            kotlin.Result.failure(e)
+        }
+    }
+
+    suspend fun createBooking(
+        roomId: Long,
+        checkInDate: String,
+        checkInTime: String,
+        checkOutDate: String,
+        checkOutTime: String,
+        numGuests: Int,
+        note: String?
+    ): kotlin.Result<Unit> {
+        val checkInDateTime = "${checkInDate}T${checkInTime}:00"
+        val checkOutDateTime = "${checkOutDate}T${checkOutTime}:00"
+        return bookingRepository.createBooking(
+            roomId = roomId,
+            checkinDate = checkInDateTime,
+            checkoutDate = checkOutDateTime,
+            numGuests = numGuests,
+            note = note
+        ).map { Unit }
     }
 
     /**
@@ -166,5 +214,3 @@ class RoomViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 }
-
-

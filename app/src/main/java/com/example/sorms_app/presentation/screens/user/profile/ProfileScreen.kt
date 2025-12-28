@@ -13,16 +13,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.sorms_app.data.datasource.local.ThemePreferenceManager
 import com.example.sorms_app.presentation.components.*
 import com.example.sorms_app.presentation.theme.DesignSystem
 import com.example.sorms_app.presentation.viewmodel.UserViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,9 +71,9 @@ fun ProfileScreen(
                     // Profile Info Card
                     SormsCard {
                         Column(
-                            modifier = Modifier.padding(20.dp),
+                            modifier = Modifier.padding(DesignSystem.Spacing.cardPadding),  // Sử dụng DesignSystem spacing
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.sm)  // Sử dụng DesignSystem spacing
                         ) {
                             // Avatar
                             Card(
@@ -122,8 +126,8 @@ fun ProfileScreen(
                     // Menu Items
                     SormsCard {
                         Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding),  // Sử dụng DesignSystem spacing
+                            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.sm)  // Tăng spacing
                         ) {
                             Text(
                                 text = "Cài đặt",
@@ -131,7 +135,7 @@ fun ProfileScreen(
                                 fontWeight = FontWeight.SemiBold
                             )
                             
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
                             
                             // Face Management
                             MenuItemRow(
@@ -162,6 +166,9 @@ fun ProfileScreen(
                                 onClick = { /* TODO: Navigate to notifications */ }
                             )
                             
+                            // Theme Toggle
+                            ThemeToggleRow()
+                            
                             MenuItemRow(
                                 icon = Icons.Default.Settings,
                                 title = "Cài đặt",
@@ -174,7 +181,7 @@ fun ProfileScreen(
                     // Logout Section
                     SormsCard {
                         Column(
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)  // Sử dụng DesignSystem spacing
                         ) {
                             SormsButton(
                                 onClick = { showConfirmLogout = true },
@@ -279,6 +286,66 @@ private fun MenuItemRow(
                 contentDescription = "Mở",
                 modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemeToggleRow() {
+    val context = LocalContext.current
+    val themeManager = remember { ThemePreferenceManager(context) }
+    val isDarkTheme by themeManager.isDarkThemeFlow.collectAsState(initial = false)
+    val scope = rememberCoroutineScope()
+    
+    Card(
+        onClick = {
+            scope.launch {
+                themeManager.toggleTheme()
+            }
+        },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = if (isDarkTheme) Icons.Default.Brightness2 else Icons.Default.WbSunny,
+                contentDescription = "Theme",
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Giao diện",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                Text(
+                    text = if (isDarkTheme) "Chế độ tối" else "Chế độ sáng",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+            }
+            
+            Switch(
+                checked = isDarkTheme,
+                onCheckedChange = { checked ->
+                    scope.launch {
+                        themeManager.setDarkTheme(checked)
+                    }
+                }
             )
         }
     }

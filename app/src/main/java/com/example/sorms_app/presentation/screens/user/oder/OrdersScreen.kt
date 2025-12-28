@@ -48,6 +48,7 @@ import com.example.sorms_app.presentation.components.SormsButton
 import com.example.sorms_app.presentation.components.SormsCard
 import com.example.sorms_app.presentation.components.SormsEmptyState
 import com.example.sorms_app.presentation.components.SormsTopAppBar
+import com.example.sorms_app.presentation.theme.DesignSystem
 import com.example.sorms_app.presentation.theme.SORMS_appTheme
 import com.example.sorms_app.presentation.utils.DateUtils
 import com.example.sorms_app.presentation.utils.FormatUtils
@@ -119,8 +120,8 @@ fun OrdersScreen(
                     Box(modifier = Modifier.fillMaxSize()) {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                            contentPadding = PaddingValues(DesignSystem.Spacing.screenHorizontal),  // Sử dụng DesignSystem spacing
+                            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.listItemSpacing)  // Sử dụng DesignSystem spacing
                         ) {
                             item {
                                 FilterSection(
@@ -153,7 +154,7 @@ private fun FilterSection(
     val filters = listOf("Tất cả", "Chờ xử lý", "Đang thực hiện", "Hoàn thành", "Đã hủy")
 
     SormsCard {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(DesignSystem.Spacing.cardContentPadding)) {  // Sử dụng DesignSystem spacing
             Text(
                 text = "Lọc đơn hàng",
                 fontSize = 16.sp,
@@ -161,9 +162,9 @@ private fun FilterSection(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.elementSpacing)) {  // Tăng spacing
                 items(filters) { filter ->
                     FilterChip(
                         selected = selectedFilter == filter,
@@ -187,7 +188,7 @@ private fun OrderCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(DesignSystem.Spacing.cardContentPadding)  // Sử dụng DesignSystem spacing
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -215,11 +216,11 @@ private fun OrderCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)  // Sử dụng DesignSystem spacing
             ) {
                 OrderDetailItem(
                     icon = Icons.Default.ShoppingBag,
@@ -244,7 +245,7 @@ private fun OrderCard(
             }
 
             if (order.items.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
                 Text(
                     text = "Dịch vụ: ${order.items.take(2).joinToString(", ") { it.serviceName }}${if (order.items.size > 2) "..." else ""}",
                     fontSize = 14.sp,
@@ -254,11 +255,11 @@ private fun OrderCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.md))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.elementSpacing)  // Tăng spacing
             ) {
                 SormsButton(
                     onClick = onOrderClick,

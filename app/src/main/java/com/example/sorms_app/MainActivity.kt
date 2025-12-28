@@ -10,7 +10,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.example.sorms_app.data.datasource.local.ThemePreferenceManager
 import com.example.sorms_app.data.repository.AuthRepository
 import com.example.sorms_app.data.utils.GoogleClientConfig
 import com.example.sorms_app.presentation.navigation.AppNavigation
@@ -95,7 +98,11 @@ class MainActivity : ComponentActivity() {
             }
 
         setContent {
-            SORMS_appTheme {
+            val context = LocalContext.current
+            val themeManager = remember { ThemePreferenceManager(context) }
+            val isDarkTheme by themeManager.isDarkThemeFlow.collectAsState(initial = false)
+            
+            SORMS_appTheme(darkTheme = isDarkTheme) {
                 val scope = rememberCoroutineScope()
                 AppNavigation(
                     authViewModel = authViewModel,

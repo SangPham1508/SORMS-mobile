@@ -83,8 +83,12 @@ fun UserNavigation(
             composable(UserTab.ROOMS.route) {
                 RoomsScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onRoomSelected = { room ->
-                        navController.navigate("booking_detail/${room.id}")
+                    onNavigateToFaceRegister = { navController.navigate("face_management") },
+                    onBookingSuccess = {
+                        // Navigate to orders and clear the back stack up to the dashboard
+                        navController.navigate(UserTab.ORDERS.route) {
+                            popUpTo(UserTab.DASHBOARD.route)
+                        }
                     }
                 )
             }
@@ -92,6 +96,11 @@ fun UserNavigation(
             composable(UserTab.SERVICES.route) {
                 ServicesScreen(
                     onNavigateBack = { navController.popBackStack() },
+                    onNavigateToOrders = {
+                        navController.navigate(UserTab.ORDERS.route) {
+                            popUpTo(UserTab.DASHBOARD.route)
+                        }
+                    },
                     onServiceSelected = { service ->
                         navController.navigate("service_detail/${service.id}")
                     },
@@ -240,7 +249,10 @@ fun UserBottomBar(
     currentRoute: String?,
     onNavigate: (String) -> Unit
 ) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface,  // Đồng bộ với design system - màu trắng/nền
+        contentColor = MaterialTheme.colorScheme.onSurface  // Đồng bộ màu text/icon
+    ) {
         UserTab.values().forEach { tab ->
             NavigationBarItem(
                 selected = currentRoute == tab.route,
@@ -251,7 +263,14 @@ fun UserBottomBar(
                         contentDescription = tab.label
                     )
                 },
-                label = { Text(tab.label) }
+                label = { Text(tab.label) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,  // Màu primary khi selected
+                    selectedTextColor = MaterialTheme.colorScheme.primary,  // Màu primary khi selected
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),  // Indicator màu nhẹ
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),  // Màu nhẹ khi unselected
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)  // Màu nhẹ khi unselected
+                )
             )
         }
     }

@@ -20,6 +20,7 @@ import com.example.sorms_app.data.repository.RoomTypeRepository
 import com.example.sorms_app.data.repository.ServiceRepositoryImpl
 import com.example.sorms_app.data.repository.TaskRepositoryImpl
 import com.example.sorms_app.data.repository.UserRepositoryImpl
+import com.example.sorms_app.data.repository.StaffProfileRepositoryImpl
 import com.example.sorms_app.domain.repository.ActivityRepository
 import com.example.sorms_app.domain.repository.BookingRepository
 import com.example.sorms_app.domain.repository.NotificationRepository
@@ -27,6 +28,7 @@ import com.example.sorms_app.domain.repository.OrderRepository
 import com.example.sorms_app.domain.repository.ServiceRepository
 import com.example.sorms_app.domain.repository.TaskRepository
 import com.example.sorms_app.domain.repository.UserRepository
+import com.example.sorms_app.domain.repository.StaffProfileRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -66,6 +68,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindOrderRepository(orderRepositoryImpl: OrderRepositoryImpl): OrderRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindStaffProfileRepository(staffRepoImpl: StaffProfileRepositoryImpl): StaffProfileRepository
 }
 
 @Module

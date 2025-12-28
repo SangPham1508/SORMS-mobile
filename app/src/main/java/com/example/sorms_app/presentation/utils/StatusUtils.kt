@@ -35,12 +35,13 @@ object StatusUtils {
 
     /**
      * Get display text for task status
+     * Đồng bộ với web: hỗ trợ cả status từ backend (OPEN, ASSIGNED, DONE) và status trong app (PENDING, COMPLETED)
      */
     fun getTaskStatusText(status: String): String {
         return when (status.uppercase()) {
-            "PENDING" -> "Chờ xử lý"
+            "PENDING", "OPEN", "ASSIGNED" -> "Chờ xử lý"  // Đồng bộ: OPEN/ASSIGNED = PENDING
             "IN_PROGRESS" -> "Đang thực hiện"
-            "COMPLETED" -> "Hoàn thành"
+            "COMPLETED", "DONE" -> "Hoàn thành"  // Đồng bộ: DONE = COMPLETED
             "CANCELLED", "REJECTED" -> "Đã hủy"
             else -> status
         }
@@ -48,12 +49,13 @@ object StatusUtils {
 
     /**
      * Get badge tone for task status
+     * Đồng bộ với web: hỗ trợ cả status từ backend (OPEN, ASSIGNED, DONE) và status trong app (PENDING, COMPLETED)
      */
     fun getTaskStatusBadgeTone(status: String): BadgeTone {
         return when (status.uppercase()) {
-            "COMPLETED" -> BadgeTone.Success
+            "COMPLETED", "DONE" -> BadgeTone.Success  // Đồng bộ: DONE = COMPLETED
             "IN_PROGRESS" -> BadgeTone.Default
-            "PENDING" -> BadgeTone.Warning
+            "PENDING", "OPEN", "ASSIGNED" -> BadgeTone.Warning  // Đồng bộ: OPEN/ASSIGNED = PENDING
             "CANCELLED", "REJECTED" -> BadgeTone.Error
             else -> BadgeTone.Default
         }

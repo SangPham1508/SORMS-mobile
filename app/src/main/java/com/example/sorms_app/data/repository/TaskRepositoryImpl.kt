@@ -95,9 +95,9 @@ class TaskRepositoryImpl @Inject constructor(
             },
             status = when (this.status?.uppercase()) {
                 "IN_PROGRESS" -> Status.IN_PROGRESS
-                "COMPLETED" -> Status.COMPLETED
+                "COMPLETED", "DONE" -> Status.COMPLETED  // Đồng bộ: DONE từ web = COMPLETED trong mobile
                 "REJECTED" -> Status.REJECTED
-                "OPEN" -> Status.PENDING
+                "OPEN", "ASSIGNED" -> Status.PENDING  // Đồng bộ: OPEN và ASSIGNED từ web = PENDING trong mobile
                 else -> Status.PENDING
             },
             dueDate = this.dueAt?.let { 

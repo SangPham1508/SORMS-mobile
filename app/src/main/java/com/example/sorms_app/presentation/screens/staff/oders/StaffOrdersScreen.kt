@@ -106,7 +106,7 @@ fun StaffOrdersScreen(
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.listItemSpacing)  // Sử dụng DesignSystem spacing
                         ) {
                             // Filter Section
                             item {
@@ -162,10 +162,10 @@ private fun FilterSection(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.elementSpacing)
             ) {
                 items(filters) { filter ->
                     FilterChip(
@@ -200,7 +200,7 @@ private fun OrderStatisticsCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.sm)
             ) {
                 StatisticItem(
                     icon = Icons.Default.Receipt,
@@ -286,7 +286,7 @@ private fun StaffOrderCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(DesignSystem.Spacing.cardContentPadding)
         ) {
             // Order Header
             Row(
@@ -317,7 +317,7 @@ private fun StaffOrderCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
             // Order Details
             Row(
@@ -348,7 +348,7 @@ private fun StaffOrderCard(
 
             // Services Summary
             if (order.items.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
 
                 Text(
                     text = "Dịch vụ: ${
@@ -374,7 +374,7 @@ private fun StaffOrderCard(
             // Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.elementSpacing)
             ) {
                 OutlinedButton(
                     onClick = onOrderClick,

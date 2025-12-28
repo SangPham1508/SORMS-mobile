@@ -80,7 +80,7 @@ fun StaffDashboardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(DesignSystem.Spacing.screenHorizontal),
-            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.md)
+            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.sectionSpacing)  // Tăng spacing giữa sections
         ) {
         // Welcome Section
         item {
@@ -141,13 +141,14 @@ fun StaffDashboardScreen(
             
             // View All Tasks Button
             item {
+                Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))  // Thêm spacing trước button
                 OutlinedButton(
                     onClick = onNavigateToTasks,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(DesignSystem.Sizes.cardCornerRadius / 2)  // Sử dụng DesignSystem
                 ) {
                     Text("Xem tất cả công việc")
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(DesignSystem.Spacing.sm))
                     Icon(
                         imageVector = Icons.Default.ArrowForward,
                         contentDescription = null,
@@ -168,7 +169,7 @@ private fun StaffWelcomeSection(
 ) {
     SormsCard {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(DesignSystem.Spacing.cardPadding)  // Sử dụng DesignSystem spacing
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -176,41 +177,42 @@ private fun StaffWelcomeSection(
                 Icon(
                     imageVector = Icons.Default.Badge,
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(20.dp),  // Giảm từ 24dp
                     tint = MaterialTheme.colorScheme.primary
                 )
                 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(DesignSystem.Spacing.sm))
                 
                 Text(
                     text = "Nhân viên",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)  // Tăng contrast
                 )
             }
             
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.xs))
             
             Text(
                 text = "Chào $staffName!",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(vertical = 4.dp)  // Tăng spacing
             )
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
             
             Text(
                 text = "Quản lý công việc và đơn hàng được phân công",
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),  // Tăng contrast
                 lineHeight = 20.sp
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.md))
             
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.elementSpacing)  // Sử dụng DesignSystem spacing
             ) {
                 SormsButton(
                     onClick = onNavigateToTasks,
@@ -239,7 +241,7 @@ private fun TaskSummarySection(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.elementSpacing)  // Tăng spacing
     ) {
         TaskSummaryCard(
             title = "Tổng cộng",
@@ -256,7 +258,7 @@ private fun TaskSummarySection(
         )
     }
     
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(DesignSystem.Spacing.elementSpacing))  // Tăng spacing
     
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -295,7 +297,7 @@ private fun TaskSummaryCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(DesignSystem.Spacing.cardContentPadding),  // Sử dụng DesignSystem spacing
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -305,10 +307,12 @@ private fun TaskSummaryCard(
                 color = color
             )
             
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.xs))
+            
             Text(
                 text = title,
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),  // Tăng contrast
                 textAlign = TextAlign.Center
             )
         }
@@ -326,7 +330,7 @@ private fun TaskCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(DesignSystem.Spacing.cardContentPadding)  // Sử dụng DesignSystem spacing
         ) {
             // Task Header
             Row(
@@ -344,10 +348,12 @@ private fun TaskCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     
+                    Spacer(modifier = Modifier.height(DesignSystem.Spacing.xs))
+                    
                     Text(
-                        text = "Mã: ${task.id}", // Use id instead of code
+                        text = "Mã: ${task.id}",
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)  // Tăng contrast
                     )
                 }
                 
@@ -359,7 +365,7 @@ private fun TaskCard(
                         tone = StatusUtils.getTaskStatusBadgeTone(task.status.name)
                     )
                     
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(DesignSystem.Spacing.xs))
                     
                     SormsBadge(
                         text = PriorityUtils.getPriorityText(task.priority),
@@ -368,18 +374,18 @@ private fun TaskCard(
                 }
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))  // Sử dụng DesignSystem spacing
             
             // Task Details
             task.description?.let { description ->
                 Text(
                     text = description,
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),  // Tăng contrast
                     maxLines = 2
                 )
                 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
             }
             
             // Due Date
@@ -391,25 +397,25 @@ private fun TaskCard(
                         imageVector = Icons.Default.Schedule,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)  // Tăng contrast
                     )
                     
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(DesignSystem.Spacing.xs))
                     
                     Text(
                         text = "Hạn: ${DateUtils.formatDate(dueDate)}",
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)  // Tăng contrast
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(DesignSystem.Spacing.sm))
             }
             
             // Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.elementSpacing)  // Tăng spacing
             ) {
                 OutlinedButton(
                     onClick = onTaskClick,
@@ -423,7 +429,7 @@ private fun TaskCard(
                     Status.PENDING -> {
                         SormsButton(
                             onClick = onAcceptTask,
-                            text = "Nhận việc",
+                            text = "Bắt đầu",  // Đồng bộ với web: thống nhất dùng "Bắt đầu" thay vì "Nhận việc"
                             variant = ButtonVariant.Primary,
                             modifier = Modifier.weight(1f)
                         )

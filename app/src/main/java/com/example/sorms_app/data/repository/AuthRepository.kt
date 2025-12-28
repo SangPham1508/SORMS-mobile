@@ -26,27 +26,44 @@ class AuthRepository(private val context: Context) {
     suspend fun checkExistingSession(): AuthResult = withContext(Dispatchers.IO) {
         try {
             val savedToken = tokenManager.accessTokenFlow.first()
+            val savedRefreshToken = tokenManager.refreshTokenFlow.first()
+            val savedAccountId = tokenManager.accountIdFlow.first()
+            val savedUserName = tokenManager.userNameFlow.first()
+            val savedUserEmail = tokenManager.userEmailFlow.first()
+            val savedAvatarUrl = tokenManager.avatarUrlFlow.first()
+            val savedRoles = tokenManager.rolesFlow.first()
             
             if (savedToken.isNullOrBlank()) {
                 return@withContext AuthResult.Error("No saved token")
             }
 
-            // Restore token to in-memory session
+            // Restore all session data to in-memory
             AuthSession.currentToken = savedToken
+            AuthSession.accountId = savedAccountId
+            AuthSession.userName = savedUserName
+            AuthSession.userEmail = savedUserEmail
+            AuthSession.avatarUrl = savedAvatarUrl
+            AuthSession.roles = savedRoles
 
-            // Try to introspect/validate the token by making a request
-            // For now, we'll trust the saved token and try to use it
-            // If it's invalid, API calls will fail and user will be logged out
+            // Try to validate token by refreshing if we have refresh token
+            // This ensures token is still valid
+            if (!savedRefreshToken.isNullOrBlank()) {
+                try {
+                    val refreshResult = refreshToken()
+                    if (refreshResult is AuthResult.Success) {
+                        return@withContext refreshResult
+                    }
+                    // If refresh fails, token might be expired
+                    // But we'll still try to use saved token - interceptor will handle 401
+                } catch (e: Exception) {
+                    // Refresh failed, but continue with saved token
+                    // Interceptor will handle 401 errors
+                }
+            }
             
-            // Try to get user info from a lightweight endpoint or cache
-            // For simplicity, we'll return success with empty roles
-            // The actual roles will be fetched when needed
-            
-            // In a real app, you might want to:
-            // 1. Call an introspect endpoint to validate the token
-            // 2. Store user info in DataStore as well
-            
-            return@withContext AuthResult.Success(AuthSession.roles.ifEmpty { listOf("USER") })
+            // Return success with saved roles (or default to USER)
+            val roles = savedRoles.ifEmpty { listOf("USER") }
+            return@withContext AuthResult.Success(roles)
             
         } catch (e: Exception) {
             return@withContext AuthResult.Error("Không thể khôi phục phiên: ${e.message}")
@@ -73,13 +90,23 @@ class AuthRepository(private val context: Context) {
                 val roles = accountInfo?.roles ?: emptyList()
 
                 if (!token.isNullOrBlank() && accountInfo != null) {
-                    // Persist both access token and refresh token to DataStore
-                    tokenManager.saveTokens(token, refreshToken)
+                    val userName = "${accountInfo.firstName ?: ""} ${accountInfo.lastName ?: ""}".trim()
+                    
+                    // Persist tokens and user info to DataStore
+                    tokenManager.saveTokens(
+                        accessToken = token,
+                        refreshToken = refreshToken,
+                        accountId = accountInfo.id,
+                        userName = userName,
+                        userEmail = accountInfo.email,
+                        avatarUrl = accountInfo.avatarUrl,
+                        roles = roles
+                    )
 
                     // Keep user info in-memory for fast access
                     AuthSession.currentToken = token
                     AuthSession.accountId = accountInfo.id
-                    AuthSession.userName = "${accountInfo.firstName ?: ""} ${accountInfo.lastName ?: ""}".trim()
+                    AuthSession.userName = userName
                     AuthSession.userEmail = accountInfo.email
                     AuthSession.avatarUrl = accountInfo.avatarUrl
                     AuthSession.roles = roles
@@ -117,13 +144,23 @@ class AuthRepository(private val context: Context) {
                 val roles = accountInfo?.roles ?: emptyList()
 
                 if (!newToken.isNullOrBlank() && accountInfo != null) {
-                    // Persist new tokens to DataStore
-                    tokenManager.saveTokens(newToken, newRefreshToken)
+                    val userName = "${accountInfo.firstName ?: ""} ${accountInfo.lastName ?: ""}".trim()
+                    
+                    // Persist new tokens and user info to DataStore
+                    tokenManager.saveTokens(
+                        accessToken = newToken,
+                        refreshToken = newRefreshToken,
+                        accountId = accountInfo.id,
+                        userName = userName,
+                        userEmail = accountInfo.email,
+                        avatarUrl = accountInfo.avatarUrl,
+                        roles = roles
+                    )
 
                     // Update in-memory session
                     AuthSession.currentToken = newToken
                     AuthSession.accountId = accountInfo.id
-                    AuthSession.userName = "${accountInfo.firstName ?: ""} ${accountInfo.lastName ?: ""}".trim()
+                    AuthSession.userName = userName
                     AuthSession.userEmail = accountInfo.email
                     AuthSession.avatarUrl = accountInfo.avatarUrl
                     AuthSession.roles = roles

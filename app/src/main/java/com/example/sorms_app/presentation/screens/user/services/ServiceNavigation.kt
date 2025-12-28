@@ -30,6 +30,7 @@ fun ServiceNavigation() {
                     navController.navigate(ServiceRoutes.serviceRequest(service.id))
                 },
                 onViewCart = { /* TODO: Navigate to cart */ },
+                onNavigateToOrders = { /* TODO: Navigate to orders */ },
                 viewModel = viewModel
             )
         }
