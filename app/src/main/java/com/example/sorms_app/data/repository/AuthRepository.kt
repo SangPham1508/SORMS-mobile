@@ -3,7 +3,7 @@ package com.example.sorms_app.data.repository
 import android.content.Context
 import com.example.sorms_app.data.datasource.local.AuthSession
 import com.example.sorms_app.data.datasource.local.TokenManager
-import com.example.sorms_app.data.datasource.remote.MobileOutboundAuthenticateRequest
+import com.example.sorms_app.data.datasource.remote.OutboundAuthenticateRequest
 import com.example.sorms_app.data.datasource.remote.RefreshTokenRequest
 import com.example.sorms_app.data.datasource.remote.RetrofitClient
 import kotlinx.coroutines.Dispatchers
@@ -54,13 +54,17 @@ class AuthRepository(private val context: Context) {
     }
 
     /**
-     * Login with Google ID Token
+     * Login với Authorization Code (giống web) - gọi /auth/outbound/authentication
      */
-    suspend fun loginWithGoogleIdToken(idToken: String): AuthResult = withContext(Dispatchers.IO) {
+    suspend fun loginWithAuthCode(authCode: String, redirectUri: String): AuthResult = withContext(Dispatchers.IO) {
         try {
-            val response = api.mobileAuthenticate(
-                MobileOutboundAuthenticateRequest(idToken = idToken)
+            val response = api.outboundAuthenticate(
+                OutboundAuthenticateRequest(
+                    code = authCode,
+                    redirectUri = redirectUri
+                )
             )
+
             if (response.isSuccessful) {
                 val body = response.body()?.data
                 val token = body?.token
@@ -79,12 +83,13 @@ class AuthRepository(private val context: Context) {
                     AuthSession.userEmail = accountInfo.email
                     AuthSession.avatarUrl = accountInfo.avatarUrl
                     AuthSession.roles = roles
-                    
+
                     return@withContext AuthResult.Success(roles)
                 }
                 return@withContext AuthResult.Error("Token hoặc thông tin người dùng trống từ backend")
             } else {
-                return@withContext AuthResult.Error("Đăng nhập thất bại: ${response.code()} - ${response.message()}")
+                val err = response.errorBody()?.string()
+                return@withContext AuthResult.Error("Đăng nhập thất bại: ${response.code()} - ${err ?: response.message()}")
             }
         } catch (e: Exception) {
             return@withContext AuthResult.Error(e.localizedMessage ?: "Lỗi không xác định")

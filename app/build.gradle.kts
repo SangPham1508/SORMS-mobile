@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services")
     kotlin("kapt")
     alias(libs.plugins.hilt)
 }
@@ -39,12 +38,14 @@ android {
         create("dev") {
             dimension = "env"
             buildConfigField("String", "API_BASE_URL", "\"http://103.81.87.99:5656/api/\"")
-            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"284260188230-9485fh8fqf0dt8pqoth9387it9uf0o76.apps.googleusercontent.com\"")
+            // redirectUri phải khớp với cấu hình OAuth Web client (local dev)
+            buildConfigField("String", "OAUTH_REDIRECT_URI", "\"http://localhost:3000/api/auth/callback/google\"")
         }
         create("prod") {
             dimension = "env"
             buildConfigField("String", "API_BASE_URL", "\"https://backend.sorms.online/api/\"")
-            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"284260188230-9485fh8fqf0dt8pqoth9387it9uf0o76.apps.googleusercontent.com\"")
+            // redirectUri phải khớp với cấu hình OAuth Web client (production)
+            buildConfigField("String", "OAUTH_REDIRECT_URI", "\"https://sorms-web.vercel.app/api/auth/callback/google\"")
         }
     }
     compileOptions {
@@ -74,10 +75,7 @@ dependencies {
     // Material Icons Extended (for CleaningServices, Task, CalendarMonth, etc.)
     implementation("androidx.compose.material:material-icons-extended")
 
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
-    implementation("com.google.firebase:firebase-auth")    // cần cho login Google
-
+    // Google Sign-In (không dùng Firebase, chỉ dùng Google Sign-In API)
     implementation(libs.google.play.services.auth)
     
     // Retrofit for API calls

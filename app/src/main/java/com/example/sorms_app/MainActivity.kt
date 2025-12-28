@@ -11,8 +11,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.rememberCoroutineScope
-import com.example.sorms_app.BuildConfig
 import com.example.sorms_app.data.repository.AuthRepository
+import com.example.sorms_app.data.utils.GoogleClientConfig
 import com.example.sorms_app.presentation.navigation.AppNavigation
 import com.example.sorms_app.presentation.theme.SORMS_appTheme
 import com.example.sorms_app.presentation.viewmodel.AuthViewModel
@@ -32,11 +32,28 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("GoogleSignInDebug", "Using GOOGLE_CLIENT_ID: ${BuildConfig.GOOGLE_CLIENT_ID}")
         enableEdgeToEdge()
 
+        // Đọc WEB client id (OAuth client type: Web application) từ file JSON
+        val webClientId = GoogleClientConfig.getWebClientId(this)
+
+        if (webClientId.isNullOrBlank()) {
+            Log.e("GoogleSignInError", "Không thể đọc web_client_id từ file google_client_secret.json")
+            Toast.makeText(
+                this,
+                "Lỗi cấu hình: Không tìm thấy WEB Client ID. Vui lòng kiểm tra file google_client_secret.json trong assets.",
+                Toast.LENGTH_LONG
+            ).show()
+            // Vẫn tiếp tục khởi tạo nhưng sẽ fail khi đăng nhập
+        } else {
+            Log.d("GoogleSignInDebug", "Đã đọc WEB_CLIENT_ID từ file JSON: $webClientId")
+        }
+
+        val finalClientId = webClientId ?: "" // Fallback empty string để tránh crash
+
+        // Dùng Authorization Code flow (giống web): xin serverAuthCode để gửi về backend exchange token
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(BuildConfig.GOOGLE_CLIENT_ID)
+            .requestServerAuthCode(finalClientId, true)
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -46,25 +63,27 @@ class MainActivity : ComponentActivity() {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 try {
                     val account = task.getResult(ApiException::class.java)
-                    val idToken = account.idToken
-                    Log.d("GoogleSignInDebug", "Received idToken: $idToken")
-                    if (idToken.isNullOrBlank()) {
-                        Toast.makeText(this, "Không lấy được idToken từ Google", Toast.LENGTH_SHORT).show()
+                    val authCode = account.serverAuthCode
+                    Log.d("GoogleSignInDebug", "Received serverAuthCode: $authCode")
+                    if (authCode.isNullOrBlank()) {
+                        Toast.makeText(this, "Không lấy được authorization code từ Google", Toast.LENGTH_SHORT).show()
                         return@registerForActivityResult
                     }
-                    authViewModel.loginWithIdToken(idToken)
+                    authViewModel.loginWithAuthCode(authCode)
                 } catch (e: ApiException) {
                     val message = when (e.statusCode) {
                         12501 -> "Bạn đã huỷ chọn tài khoản Google"
                         12500, 10 -> {
+                            val errorClientId = GoogleClientConfig.getWebClientId(this) ?: "Không tìm thấy"
                             Log.e("GoogleSignInError", "DEVELOPER_ERROR (${e.statusCode}): ${e.message}", e)
-                            Log.e("GoogleSignInError", "Client ID used: ${BuildConfig.GOOGLE_CLIENT_ID}")
+                            Log.e("GoogleSignInError", "Client ID used: $errorClientId")
                             Log.e("GoogleSignInError", "Package name: ${packageName}")
                             "Lỗi cấu hình đăng nhập Google (mã ${e.statusCode}).\n" +
                             "Vui lòng kiểm tra:\n" +
                             "1. SHA-1 fingerprint đã được thêm vào Google Cloud Console\n" +
                             "2. Package name: $packageName\n" +
-                            "3. Client ID: ${BuildConfig.GOOGLE_CLIENT_ID}"
+                            "3. Client ID: $errorClientId\n" +
+                            "4. File google_client_secret.json trong assets"
                         }
                         else -> {
                             Log.e("GoogleSignInError", "Error code ${e.statusCode}: ${e.message}", e)

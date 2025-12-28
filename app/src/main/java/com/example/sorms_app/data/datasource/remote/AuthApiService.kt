@@ -8,9 +8,9 @@ import retrofit2.http.POST
 // Backend auth endpoints mapping AuthenticationController
 interface AuthApiService {
 
-    // POST /auth/mobile/outbound/authentication
-    @POST("auth/mobile/outbound/authentication")
-    suspend fun mobileAuthenticate(@Body request: MobileOutboundAuthenticateRequest): Response<ApiResponse<AuthenticationResponse>>
+    // POST /auth/outbound/authentication (web-style: authorization code flow)
+    @POST("auth/outbound/authentication")
+    suspend fun outboundAuthenticate(@Body request: OutboundAuthenticateRequest): Response<ApiResponse<AuthenticationResponse>>
 
     // POST /auth/refresh
     @POST("auth/refresh")
@@ -18,9 +18,10 @@ interface AuthApiService {
 }
 
 // Requests
-data class MobileOutboundAuthenticateRequest(
-    val idToken: String,
-    val platform: String = "android"
+
+data class OutboundAuthenticateRequest(
+    val code: String,
+    val redirectUri: String
 )
 
 data class RefreshTokenRequest(

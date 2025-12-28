@@ -57,12 +57,13 @@ class AuthViewModel @Inject constructor(
     }
 
     /**
-     * Login with Google ID Token
+     * Login với Authorization Code (giống web)
      */
-    fun loginWithIdToken(idToken: String) {
+    fun loginWithAuthCode(authCode: String) {
         _uiState.value = AuthUiState.Loading
         viewModelScope.launch {
-            when (val result = repository.loginWithGoogleIdToken(idToken)) {
+            val redirectUri = com.example.sorms_app.BuildConfig.OAUTH_REDIRECT_URI
+            when (val result = repository.loginWithAuthCode(authCode, redirectUri)) {
                 is AuthResult.Success -> _uiState.value = AuthUiState.Success(result.roles)
                 is AuthResult.Error -> _uiState.value = AuthUiState.Error(result.message)
             }
